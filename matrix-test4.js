@@ -29,7 +29,7 @@ window.Renderer = (function(){
 	
 	var isMouseDown = false,
 		posX = 0,
-		posY = 0 ;
+		posY = 0,
 		x = 0;
 
 	var renderer = function(canvas){
@@ -38,13 +38,13 @@ window.Renderer = (function(){
 		w = canvas.width;
 		h = canvas.height;
 		x = canvas.offsetLeft;
-		
+		console.log('offsetLeft : ' + canvas.offsetLeft);
 		if(!window) {
 			return new Error('no window');
 		}
 		canvas.onmousemove = function(event) {
 			if(isDragging) {
-				posX = event.screenX - canvas.offsetLeft;
+				posX = event.clientX - canvas.offsetLeft;
 				console.log('posX : ' + posX);
 			}else if(isMouseDown){
 				mouseDownCount++;
@@ -74,8 +74,7 @@ window.Renderer = (function(){
 				// animation is just stopped
 				console.log('animation stop as well');
 			}
-			else if(mouseDownCount > 10) {
-				//Drag
+			else if(isDragging) {
 				isAnimating = false;
 				dest = posX;
 				console.log('dragging end');
@@ -122,10 +121,7 @@ window.Renderer = (function(){
 		
 		if( posX > w )  posX -= w;
 		
-		c.fillRect( posX, posY, 10, 10);
-	
-		
-		
+		c.fillRect( posX, posY, 40, 40);
 		c.restore();
 	};	
 	
