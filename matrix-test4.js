@@ -29,15 +29,14 @@ window.Renderer = (function(){
 	
 	var isMouseDown = false,
 		posX = 0,
-		posY = 0,
-		x = 0;
+		posY = 0;
 
 	var renderer = function(canvas){
 		this.canvas = canvas;
 		c = canvas.getContext('2d');
 		w = canvas.width;
 		h = canvas.height;
-		x = canvas.offsetLeft;
+		
 		console.log('offsetLeft : ' + canvas.offsetLeft);
 		if(!window) {
 			return new Error('no window');
@@ -63,6 +62,7 @@ window.Renderer = (function(){
 				isDragging = false;
 				isAnimating = false;
 				mouseDownCount = 1;
+				clickedX = event.clientX - canvas.offsetLeft;
 				console.log('mouse down');
 			}
 		};
@@ -80,9 +80,12 @@ window.Renderer = (function(){
 				console.log('dragging end');
 			} else {
 				isAnimating = true;
-				dest += 300;
-				if(dest > w) dest -= w;
-				console.log('start animation!');
+//				velocityX = 50;
+				var dx = (event.clientX - canvas.offsetLeft) - clickedX;
+				
+				velocityX = dx * Math.pow((12 - mouseDownCount), 0.01) ;
+ 
+				console.log('start animation! : mouseDownCount : ' + mouseDownCount);
 			}	
 			
 		}
@@ -91,17 +94,20 @@ window.Renderer = (function(){
 	
 	function stopAnimation(){
 		isAnimating = false;
-		dest = posX;
+		//dest = posX;
+		velocityX = 0;
 		mouseDownCount = 0;
 		console.log('animation stop');
 	}
-	var dest = 500;
+	//var dest = 0;
 	var isDragging = false;
 	var isAnimating = false;
 	var mouseDownCount = 0;
+	var clickedX = 0;
+	var velocityX = 0;
 
 	renderer.prototype.update = function() {
-		// Drag or flip counting
+		
 		
 	
 		c.save();
@@ -112,16 +118,21 @@ window.Renderer = (function(){
 		
 		
 		if(isAnimating) {
-			posX += (dest - posX) * 0.03;
-			if( posX > w )  posX -= w;
-			if(Math.abs(dest - posX) < 0.1 ) {
+			//posX += velocityX;
+			velocityX *= 0.9;
+			posX += velocityX;
+			
+			if( (posX + 20) > w || posX < 0) {
+				velocityX *= -1;
+				posX += velocityX * 2;
+			}
+
+			if(Math.abs(velocityX) < 0.1 ) {
 				stopAnimation();
 			}
 		}
-		
-		if( posX > w )  posX -= w;
-		
-		c.fillRect( posX, posY, 40, 40);
+
+		c.fillRect( posX, posY, 20, 20);
 		c.restore();
 	};	
 	
