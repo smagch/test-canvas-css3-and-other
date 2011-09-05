@@ -1,0 +1,116 @@
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Webkit CSS3 Test</title>
+  <style>
+    body {
+      	background-color: black;
+	    color: white;
+	    font-family: 'Lucida Grande', Verdana, Arial;
+	    font-size: 12px;
+	    background-image: -webkit-gradient(radial,
+	                            50% 500, 1,
+	                            50% 500, 400,
+	                            from(rgba(255, 255, 255, 0.3)),
+	                            to(rgba(255, 255, 255, 0)));
+	    background-repeat: no-repeat;
+    }
+	#stage {
+        margin: 150px auto;
+        width: 600px;
+        height: 400px;
+        -webkit-perspective: 800;
+    }
+	#box {
+		margin: 0 auto;
+		position: relative;
+		width: 200px;
+		height: 200px;
+		-webkit-transform-style: preserve-3d;
+		-webkit-transform:rotateX(40deg);
+	}
+	.plane {
+		margin: 0 auto;
+		position: absolute;
+        width: 200px;
+        height: 200px;
+		background-color:blue;
+		opacity: 0.6;
+		border:1px solid red;
+        -webkit-transform-style: preserve-3d;
+		/*-webkit-transform:rotateX(40deg);*/
+	}
+	
+  </style>
+  <script>
+	// requestAnim shim layer by Paul Irish
+	window.requestAnimFrame = (function(){
+		return  window.requestAnimationFrame       || 
+	            window.webkitRequestAnimationFrame || 
+	            window.mozRequestAnimationFrame    || 
+	            window.oRequestAnimationFrame      || 
+	            window.msRequestAnimationFrame     || 
+	            function(/* function */ callback, /* DOMElement */ element){
+	            	window.setTimeout(callback, 1000 / 60);
+	            };
+	})();
+	
+	window.init = function(){
+		console.log('init');
+		
+		
+		var mat = new WebKitCSSMatrix();
+
+		var mat_rot90 = mat.rotateAxisAngle(0,1,0,90);
+		var mat_rot180 = mat.rotateAxisAngle(0,1,0,180);
+		var mat_rot270 = mat.rotateAxisAngle(0,1,0,-90);
+		var mat_top = mat.rotateAxisAngle(1,0,0,90);
+		var mat_bottom = mat.rotateAxisAngle(1,0,0,-90);
+
+		var mats = [ 	mat, mat_rot90, mat_rot180, mat_rot270,
+						mat_top, mat_bottom ];
+						
+		for(var i = 0; i < 6 ; ++i) {
+			var id = 'plane' + i;
+			var plane = document.getElementById(id);
+			var m = mats[i];
+			plane.style.webkitTransform = m.translate(0,0,100);
+			
+		}
+
+		function update() {
+			var box = document.getElementById('box');
+			var tranString = window.getComputedStyle(box).webkitTransform;
+			var m = new WebKitCSSMatrix(tranString);
+			box.style.webkitTransform = m.rotateAxisAngle(3,1,2,1);
+			
+			
+			// var m = matrix.translate(0,0,-1000);
+			// 			m = m.rotateAxisAngle(0,1,0,rot++);
+			// 			plane.style.webkitTransform = m;
+//		
+		}
+		
+		(function animloop(){
+		      update();
+		      requestAnimFrame(animloop);
+		})();
+	};
+
+	
+  </script>
+</head>
+<body onload='init()'>
+	<div id='stage'>
+		<div id='box'>
+			<div id='plane0' class='plane'></div>
+			<div id='plane1' class='plane'></div>
+			<div id='plane2' class='plane'></div>
+			<div id='plane3' class='plane'></div>
+			<div id='plane4' class='plane'></div>
+			<div id='plane5' class='plane'></div>
+		</div>
+	</div>
+  
+</body>
+</html>
