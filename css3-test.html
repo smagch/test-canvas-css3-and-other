@@ -55,12 +55,14 @@
 		var theTransform = window.getComputedStyle(plane).webkitTransform;
 		var matrix = new WebKitCSSMatrix(theTransform);
 		
+		//var m = new WebkitCSSMatrix();
+//		m.rotateAxisAngle()
 		function update() {
 			
-			matrix = matrix.rotateAxisAngle(0,1,0,rot);
-			//matrix = matrix.translate(0,0,10);
-			plane.style.webkitTransform = matrix;
-//			rot += 0.01;
+			var m = matrix.translate(0,0,-1000);//matrix = matrix.translate(0,0,10);
+			m = m.rotateAxisAngle(0,1,0,rot++);
+			plane.style.webkitTransform = m;
+//		
 		}
 		
 		(function animloop(){
