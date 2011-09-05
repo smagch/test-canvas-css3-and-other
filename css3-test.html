@@ -1,0 +1,81 @@
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Webkit CSS3 Test</title>
+  <style>
+    body {
+      	background-color: black;
+	    color: white;
+	    font-family: 'Lucida Grande', Verdana, Arial;
+	    font-size: 12px;
+	    background-image: -webkit-gradient(radial,
+	                            50% 500, 1,
+	                            50% 500, 400,
+	                            from(rgba(255, 255, 255, 0.3)),
+	                            to(rgba(255, 255, 255, 0)));
+	    background-repeat: no-repeat;
+    }
+	#stage {
+        margin: 150px auto;
+        width: 600px;
+        height: 400px;
+        -webkit-perspective: 800;
+    }
+	#plane {
+		margin: 0 auto;
+        width: 300px;
+        height: 300px;
+		background-color:blue;
+		opacity: 0.6;
+        -webkit-transform-style: preserve-3d;
+		/*-webkit-transform:rotateX(40deg);*/
+	}
+	
+  </style>
+  <script>
+	// requestAnim shim layer by Paul Irish
+	window.requestAnimFrame = (function(){
+		return  window.requestAnimationFrame       || 
+	            window.webkitRequestAnimationFrame || 
+	            window.mozRequestAnimationFrame    || 
+	            window.oRequestAnimationFrame      || 
+	            window.msRequestAnimationFrame     || 
+	            function(/* function */ callback, /* DOMElement */ element){
+	            	window.setTimeout(callback, 1000 / 60);
+	            };
+	})();
+	
+	window.init = function(){
+		console.log('init');
+		
+	
+		var rot = 1;
+		
+		var plane = document.getElementById('plane');
+		var theTransform = window.getComputedStyle(plane).webkitTransform;
+		var matrix = new WebKitCSSMatrix(theTransform);
+		
+		function update() {
+			
+			matrix = matrix.rotateAxisAngle(0,1,0,rot);
+			//matrix = matrix.translate(0,0,10);
+			plane.style.webkitTransform = matrix;
+//			rot += 0.01;
+		}
+		
+		(function animloop(){
+		      update();
+		      requestAnimFrame(animloop);
+		})();
+	};
+
+	
+  </script>
+</head>
+<body onload='init()'>
+	<div id='stage'>
+		<div id='plane'></div>
+	</div>
+  
+</body>
+</html>
