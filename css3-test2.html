@@ -20,14 +20,19 @@
         width: 600px;
         height: 400px;
         -webkit-perspective: 800;
+		-webkit-transform-style: preserve-3d;
     }
-	#box {
+	#world {
+		-webkit-transform-style: preserve-3d;
+		-webkit-transform: translate(0,0,-100px);
+	}
+	.box {
 		margin: 0 auto;
 		position: relative;
 		width: 200px;
 		height: 200px;
 		-webkit-transform-style: preserve-3d;
-		-webkit-transform:rotateX(40deg);
+		-webkit-transform: rotateX(40deg) ;
 	}
 	.plane {
 		margin: 0 auto;
@@ -43,6 +48,7 @@
 	
   </style>
   <script>
+
 	// requestAnim shim layer by Paul Irish
 	window.requestAnimFrame = (function(){
 		return  window.requestAnimationFrame       || 
@@ -55,60 +61,71 @@
 	            };
 	})();
 	
-	window.init = function(){
-		console.log('init');
+	window.Util = (function(){
 		
-		
-		var mat = new WebKitCSSMatrix();
-
-		var mat_rot90 = mat.rotateAxisAngle(0,1,0,90);
-		var mat_rot180 = mat.rotateAxisAngle(0,1,0,180);
-		var mat_rot270 = mat.rotateAxisAngle(0,1,0,-90);
-		var mat_top = mat.rotateAxisAngle(1,0,0,90);
-		var mat_bottom = mat.rotateAxisAngle(1,0,0,-90);
-
-		var mats = [ 	mat, mat_rot90, mat_rot180, mat_rot270,
-						mat_top, mat_bottom ];
-						
-		for(var i = 0; i < 6 ; ++i) {
-			var id = 'plane' + i;
-			var plane = document.getElementById(id);
-			var m = mats[i];
-			plane.style.webkitTransform = m.translate(0,0,100);
+		var	mat = new WebKitCSSMatrix();
+			mats = [	mat,
+					mat.rotateAxisAngle(0,1,0,90),
+					mat.rotateAxisAngle(0,1,0,180),
+					mat.rotateAxisAngle(0,1,0,-90),
+					mat.rotateAxisAngle(1,0,0,90),
+					mat.rotateAxisAngle(1,0,0,-90) ];
 			
-		}
+					
+		
+		
+		return {
+			createBox : function(size, parentId) { // width = height = size * 2;
+				var parent = document.getElementById(parentId);
+				var box = document.createElement('div');
+				box.className = 'box';
+				for(var i = 0; i < 6 ; ++i) {
+					var div = document.createElement('div');
+					div.className = 'plane';
+					var m = mats[i];
+					div.style.webkitTransform = m.translate(0,0,size);
+					box.appendChild(div);
+				}
+				
+				parent.appendChild(box);
+				return box;
+			}
 
+		};
+	})();
+	
+	
+	window.init = function(){
+		
+		
+		
+		//var stage = document.getElementById('stage');
+		var box = Util.createBox(100, 'world');
+		
 		function update() {
-			var box = document.getElementById('box');
 			var tranString = window.getComputedStyle(box).webkitTransform;
 			var m = new WebKitCSSMatrix(tranString);
 			box.style.webkitTransform = m.rotateAxisAngle(3,1,2,1);
-			
-			
-			// var m = matrix.translate(0,0,-1000);
-			// 			m = m.rotateAxisAngle(0,1,0,rot++);
-			// 			plane.style.webkitTransform = m;
-//		
 		}
 		
-		(function animloop(){
+		(function animloop() {
 		      update();
 		      requestAnimFrame(animloop);
 		})();
 	};
 
-	
+	function mouseDownHandler(event) {
+		console.log('click');
+		var world = document.getElementById('world');
+		var tranString = window.getComputedStyle(world).webkitTransform;
+		var m = new WebKitCSSMatrix(tranString);
+		world.style.webkitTransform = m.translate(0,0,100);
+	}
   </script>
 </head>
-<body onload='init()'>
+<body onload='init()' onmousedown='mouseDownHandler(event)'>
 	<div id='stage'>
-		<div id='box'>
-			<div id='plane0' class='plane'></div>
-			<div id='plane1' class='plane'></div>
-			<div id='plane2' class='plane'></div>
-			<div id='plane3' class='plane'></div>
-			<div id='plane4' class='plane'></div>
-			<div id='plane5' class='plane'></div>
+		<div id='world'>
 		</div>
 	</div>
   
