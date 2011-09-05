@@ -21,12 +21,22 @@
         height: 400px;
         -webkit-perspective: 800;
     }
-	#plane {
+	#box {
 		margin: 0 auto;
-        width: 300px;
-        height: 300px;
+		position: relative;
+		width: 200px;
+		height: 200px;
+		-webkit-transform-style: preserve-3d;
+		-webkit-transform:rotateX(40deg);
+	}
+	.plane {
+		margin: 0 auto;
+		position: absolute;
+        width: 200px;
+        height: 200px;
 		background-color:blue;
 		opacity: 0.6;
+		border:1px solid red;
         -webkit-transform-style: preserve-3d;
 		/*-webkit-transform:rotateX(40deg);*/
 	}
@@ -48,20 +58,36 @@
 	window.init = function(){
 		console.log('init');
 		
-	
-		var rot = 1;
 		
-		var plane = document.getElementById('plane');
-		var theTransform = window.getComputedStyle(plane).webkitTransform;
-		var matrix = new WebKitCSSMatrix(theTransform);
-		
-		//var m = new WebkitCSSMatrix();
-//		m.rotateAxisAngle()
-		function update() {
+		var mat = new WebKitCSSMatrix();
+
+		var mat_rot90 = mat.rotateAxisAngle(0,1,0,90);
+		var mat_rot180 = mat.rotateAxisAngle(0,1,0,180);
+		var mat_rot270 = mat.rotateAxisAngle(0,1,0,-90);
+		var mat_top = mat.rotateAxisAngle(1,0,0,90);
+		var mat_bottom = mat.rotateAxisAngle(1,0,0,-90);
+
+		var mats = [ 	mat, mat_rot90, mat_rot180, mat_rot270,
+						mat_top, mat_bottom ];
+						
+		for(var i = 0; i < 6 ; ++i) {
+			var id = 'plane' + i;
+			var plane = document.getElementById(id);
+			var m = mats[i];
+			plane.style.webkitTransform = m.translate(0,0,100);
 			
-			var m = matrix.translate(0,0,-1000);//matrix = matrix.translate(0,0,10);
-			m = m.rotateAxisAngle(0,1,0,rot++);
-			plane.style.webkitTransform = m;
+		}
+
+		function update() {
+			var box = document.getElementById('box');
+			var tranString = window.getComputedStyle(box).webkitTransform;
+			var m = new WebKitCSSMatrix(tranString);
+			box.style.webkitTransform = m.rotateAxisAngle(3,1,2,1);
+			
+			
+			// var m = matrix.translate(0,0,-1000);
+			// 			m = m.rotateAxisAngle(0,1,0,rot++);
+			// 			plane.style.webkitTransform = m;
 //		
 		}
 		
@@ -76,7 +102,14 @@
 </head>
 <body onload='init()'>
 	<div id='stage'>
-		<div id='plane'></div>
+		<div id='box'>
+			<div id='plane0' class='plane'></div>
+			<div id='plane1' class='plane'></div>
+			<div id='plane2' class='plane'></div>
+			<div id='plane3' class='plane'></div>
+			<div id='plane4' class='plane'></div>
+			<div id='plane5' class='plane'></div>
+		</div>
 	</div>
   
 </body>
