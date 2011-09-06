@@ -24,21 +24,21 @@
     }
 	#world {
 		-webkit-transform-style: preserve-3d;
-		-webkit-transform: translate(0,0,-100px);
+		-webkit-transform: translate(0,0,-700px);
 	}
 	.box {
 		margin: 0 auto;
-		position: relative;
-		width: 200px;
-		height: 200px;
+		position: absolute;
+	/*	width: 200px;
+			height: 200px;*/
 		-webkit-transform-style: preserve-3d;
 		-webkit-transform: rotateX(40deg) ;
 	}
 	.plane {
 		margin: 0 auto;
 		position: absolute;
-        width: 200px;
-        height: 200px;
+       /* width: 200px;
+               height: 200px;*/
 		background-color:blue;
 		opacity: 0.6;
 		border:1px solid red;
@@ -72,16 +72,18 @@
 					mat.rotateAxisAngle(1,0,0,-90) ];
 			
 					
-		
-		
 		return {
 			createBox : function(size, parentId) { // width = height = size * 2;
 				var parent = document.getElementById(parentId);
 				var box = document.createElement('div');
 				box.className = 'box';
+				box.style.width = size * 2;
+				box.style.height = size * 2;
 				for(var i = 0; i < 6 ; ++i) {
 					var div = document.createElement('div');
 					div.className = 'plane';
+					div.style.width = size * 2;
+					div.style.height = size * 2;
 					var m = mats[i];
 					div.style.webkitTransform = m.translate(0,0,size);
 					box.appendChild(div);
@@ -97,15 +99,22 @@
 	
 	window.init = function(){
 		
-		
-		
-		//var stage = document.getElementById('stage');
-		var box = Util.createBox(100, 'world');
-		
+		for(var i = 0; i < 3; i++ ) {
+			for(var j = 0; j < 3; j++) {
+				for(var k = 0; k < 3; k++) {
+					var box = Util.createBox(30, 'world');
+					box.style.webkitTransform = 'translateX(' + 70 * i + 'px) ' + 
+												'translateY(' + 70 * j + 'px) ' + 
+												'translateZ(' + 70 * k + 'px)';
+				}
+			}
+		}
+
+		var world = document.getElementById('world');
 		function update() {
-			var tranString = window.getComputedStyle(box).webkitTransform;
+			var tranString = window.getComputedStyle(world).webkitTransform;
 			var m = new WebKitCSSMatrix(tranString);
-			box.style.webkitTransform = m.rotateAxisAngle(3,1,2,1);
+			world.style.webkitTransform = m.rotateAxisAngle(3,1,2,1);
 		}
 		
 		(function animloop() {
