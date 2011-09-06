@@ -16,36 +16,43 @@
 	    background-repeat: no-repeat;
     }
 	#stage {
-        margin: 150px auto;
-        width: 600px;
-        height: 400px;
+        margin: 0 auto;
+        width: 0;
+        height: 0;
         -webkit-perspective: 800;
 		-webkit-transform-style: preserve-3d;
+		-webkit-perspective-origin: 50% 50%;
     }
 	#world {
+		margin: 0 auto;
+		position: absolute;
 		-webkit-transform-style: preserve-3d;
-		-webkit-transform: translate(0,0,-700px);
+		
 	}
 	.box {
 		margin: 0 auto;
 		position: absolute;
-	/*	width: 200px;
-			height: 200px;*/
+
 		-webkit-transform-style: preserve-3d;
-		-webkit-transform: rotateX(40deg) ;
+		/*-webkit-animation-name: y-spin;
+				-webkit-animation-duration: 10s;
+				-webkit-animation-iteration-count: infinite;
+		        -webkit-animation-timing-function: linear;*/
 	}
 	.plane {
 		margin: 0 auto;
 		position: absolute;
-       /* width: 200px;
-               height: 200px;*/
 		background-color:blue;
 		opacity: 0.6;
 		border:1px solid red;
-        -webkit-transform-style: preserve-3d;
+        -webkit-transform-style: flat;
 		/*-webkit-transform:rotateX(40deg);*/
 	}
-	
+	@-webkit-keyframes y-spin {
+        0%    { -webkit-transform: rotateY(0deg); }
+        50%   { -webkit-transform: rotateY(180deg); }
+        100%  { -webkit-transform: rotateY(360deg); }
+    }
   </style>
   <script>
 
@@ -77,8 +84,8 @@
 				var parent = document.getElementById(parentId);
 				var box = document.createElement('div');
 				box.className = 'box';
-				box.style.width = size * 2;
-				box.style.height = size * 2;
+				//box.style.width = size * 2;
+				// box.style.height = size * 2;
 				for(var i = 0; i < 6 ; ++i) {
 					var div = document.createElement('div');
 					div.className = 'plane';
@@ -96,43 +103,65 @@
 		};
 	})();
 	
+	var mouseX = 0, mouseY = 0;
 	
 	window.init = function(){
 		
-		for(var i = 0; i < 3; i++ ) {
-			for(var j = 0; j < 3; j++) {
-				for(var k = 0; k < 3; k++) {
+		var cubeNum = 3;
+		for(var i = 0; i < cubeNum; i++ ) {
+			for(var j = 0; j < cubeNum; j++) {
+				for(var k = 0; k < cubeNum; k++) {
 					var box = Util.createBox(30, 'world');
-					box.style.webkitTransform = 'translateX(' + 70 * i + 'px) ' + 
-												'translateY(' + 70 * j + 'px) ' + 
-												'translateZ(' + 70 * k + 'px)';
+					box.style.webkitTransform = 'translateX(' + 70 * ( i - cubeNum/2 ) + 'px) ' + 
+												'translateY(' + 70 * ( j - cubeNum/2 ) + 'px) ' + 
+												'translateZ(' + 70 * ( k - cubeNum/2 ) + 'px)';
 				}
 			}
 		}
 
-		var world = document.getElementById('world');
+		var world = document.getElementById('world'),
+			worldView = new WebKitCSSMatrix(),
+			rot = 0,
+			halfW = window.outerWidth / 2,
+			halfH = window.innerHeight / 2;
+			console.log('halfH : ' + halfH);
+			
 		function update() {
-			var tranString = window.getComputedStyle(world).webkitTransform;
-			var m = new WebKitCSSMatrix(tranString);
-			world.style.webkitTransform = m.rotateAxisAngle(3,1,2,1);
-		}
+			
+			// rotate
+			// var tranString = window.getComputedStyle(world).webkitTransform;
+			// 			var m = new WebKitCSSMatrix(tranString);
+			// 			world.style.webkitTransform = m.rotateAxisAngle(0,1,0,1);
+			
+			//world.style.webkitTransform = worldView.rotateAxisAngle(0,1,0,rot++);
+			var rotateY = ( mouseX - halfW ) / halfW * 180,
+				rotateX = ( mouseY - halfH ) / halfH * 180;
+			//console.log('mouseY : ' + mouseY);
+			world.style.webkitTransform = worldView.translate(0,halfH+35,0)
+				.rotateAxisAngle(0,1,0, rotateY).rotateAxisAngle(1,0,0, rotateX);
+ 		}
 		
 		(function animloop() {
 		      update();
 		      requestAnimFrame(animloop);
 		})();
 	};
-
+	
+	function mouseMoveHandler (event) {
+		mouseX = event.clientX;
+		mouseY = event.clientY;
+	}
 	function mouseDownHandler(event) {
 		console.log('click');
-		var world = document.getElementById('world');
-		var tranString = window.getComputedStyle(world).webkitTransform;
-		var m = new WebKitCSSMatrix(tranString);
-		world.style.webkitTransform = m.translate(0,0,100);
+		// var world = document.getElementById('world');
+		// 		var tranString = window.getComputedStyle(world).webkitTransform;
+		// 		var m = new WebKitCSSMatrix(tranString);
+		// 		world.style.webkitTransform = m.translate(0,0,100);
 	}
+	
   </script>
 </head>
-<body onload='init()' onmousedown='mouseDownHandler(event)'>
+<body onload='init()' onmousedown='mouseDownHandler(event)' onmousemove='mouseMoveHandler(event)'>
 	<div id='stage'>
 		<div id='world'>
 		</div>
