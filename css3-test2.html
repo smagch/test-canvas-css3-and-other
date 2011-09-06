@@ -32,7 +32,6 @@
 	.box {
 		margin: 0 auto;
 		position: absolute;
-
 		-webkit-transform-style: preserve-3d;
 		/*-webkit-animation-name: y-spin;
 				-webkit-animation-duration: 10s;
@@ -46,7 +45,7 @@
 		opacity: 0.6;
 		border:1px solid red;
         -webkit-transform-style: flat;
-		
+		-webkit-backface-visibility: hidden;
 	}
 	@-webkit-keyframes y-spin {
         0%    { -webkit-transform: rotateY(0deg); }
@@ -80,7 +79,7 @@
 			
 					
 		return {
-			createBox : function(size, parentId) { // width = height = size * 2;
+			createBox : function(size, parentId) { // width = height = size;
 				var parent = document.getElementById(parentId);
 				var box = document.createElement('div');
 				box.className = 'box';
@@ -88,90 +87,104 @@
 				for(var i = 0; i < 6 ; ++i) {
 					var div = document.createElement('div');
 					div.className = 'plane';
-					div.style.width = size * 2;
-					div.style.height = size * 2;
+					div.style.width = size;
+					div.style.height = size;
 					var m = mats[i];
-					div.style.webkitTransform = m.translate(0,0,size);
+					div.style.webkitTransform = m.translate(0,0,size/2);
 					box.appendChild(div);
 				}
 				
 				parent.appendChild(box);
 				return box;
+			},
+			createBigBox : function( cubeNum, parentId, cubeSize, span ) {
+				var size = cubeSize + span;
+				var offset = (size * cubeNum - span) * -0.5;
+				for(var i = 0; i < cubeNum; i++ ) {
+					for(var j = 0; j < cubeNum; j++) {
+						for(var k = 0; k < cubeNum; k++) {
+							var box = Util.createBox(cubeSize, parentId );
+							box.style.webkitTransform = 'translateX(' + ( offset + size * i ) + 'px) ' + 
+														'translateY(' + ( offset + size * j ) + 'px) ' + 
+														'translateZ(' + ( offset + size * k ) + 'px)';
+						}
+					}
+				}
+				
+				
 			}
-
 		};
 	})();
 	
-	var mouseX = 0, mouseY = 0;
-	
-	window.init = function(){
+	window.Render = (function() {
 		
-		var cubeNum = 3;
-		for(var i = 0; i < cubeNum; i++ ) {
-			for(var j = 0; j < cubeNum; j++) {
-				for(var k = 0; k < cubeNum; k++) {
-					var box = Util.createBox(30, 'world');
-					box.style.webkitTransform = 'translateX(' + 70 * ( i - cubeNum/2 ) + 'px) ' + 
-												'translateY(' + 70 * ( j - cubeNum/2 ) + 'px) ' + 
-												'translateZ(' + 70 * ( k - cubeNum/2 ) + 'px)';
-				}
-			}
-		}
-
-		var world = document.getElementById('world'),
-			worldView = new WebKitCSSMatrix(),
-			rot = 0,
-			halfW = window.innerWidth / 2,
-			halfH = window.innerHeight / 2;
-		
-		var stage = document.getElementById('stage');
-		stage.style.webkitPerspectiveOrigin = '50% ' + halfH + 'px';
-		
-		var halfBoxSize = ( 70 * 3 - 10 ) / 4;
-		
-		var mouseXBuffer = 0,
-			mouseYBuffer = 0;
+		var render = function(worldId) { 
+			this.resize();
 			
-		function update() {
+			world = document.getElementById(worldId || 'world');
+		};
+		
+		var mouseX = 0, 
+			mouseY = 0,
+			mouseXBuffer = 0,
+			mouseYBuffer = 0,
+			world,
+			worldView = new WebKitCSSMatrix();
+			halfBoxSize = ( 30 * 3 - 30 ) / 4;
+		
+		
+		render.prototype.update = function() {
 			
-			// rotate
-			// var tranString = window.getComputedStyle(world).webkitTransform;
-			// 			var m = new WebKitCSSMatrix(tranString);
-			// 			world.style.webkitTransform = m.rotateAxisAngle(0,1,0,1);
-			
-			//world.style.webkitTransform = worldView.rotateAxisAngle(0,1,0,rot++);
-			mouseXBuffer += ( mouseX - mouseXBuffer ) * 0.2;
-			mouseYBuffer += ( mouseY - mouseYBuffer ) * 0.2;
+			mouseXBuffer += ( mouseX - mouseXBuffer ) * 0.1;
+			mouseYBuffer += ( mouseY - mouseYBuffer ) * 0.1;
 			
 			var	rotateY = ( mouseXBuffer - halfW ) / halfW * 180,
 				rotateX = ( mouseYBuffer - halfH ) / halfH * 180;
-			//console.log('mouseY : ' + mouseY);
+			
 			world.style.webkitTransform = worldView.translate(0,halfH-10 ,0)
 				.rotateAxisAngle(0,1,0, rotateY).rotateAxisAngle(1,0,0, rotateX)
 				.translate(0, 0, halfBoxSize);
- 		}
+		};
+		
+		render.prototype.resize = function() {
+			halfW = window.innerWidth / 2;
+			halfH = window.innerHeight / 2;
+			var stage = document.getElementById('stage');
+			stage.style.webkitPerspectiveOrigin = '50% ' + halfH + 'px';
+		}
+		
+		
+		window.onresize = function(event) {
+			render.prototype.resize();
+		};
+		
+		window.onmousemove = function (event) {
+			mouseX = event.clientX;
+			mouseY = event.clientY;
+		}
+		
+		return render;
+	})();
+	
+	
+	
+	function init() {
+		
+		Util.createBigBox(3, 'world', 30, 30);
+		var render = new Render('world');
 		
 		(function animloop() {
-		      update();
+		      render.update();
 		      requestAnimFrame(animloop);
 		})();
 	};
 	
-	function mouseMoveHandler (event) {
-		mouseX = event.clientX;
-		mouseY = event.clientY;
-	}
-	function mouseDownHandler(event) {
-		console.log('click');
-		// var world = document.getElementById('world');
-		// 		var tranString = window.getComputedStyle(world).webkitTransform;
-		// 		var m = new WebKitCSSMatrix(tranString);
-		// 		world.style.webkitTransform = m.translate(0,0,100);
-	}
 	
+	
+		
   </script>
 </head>
-<body onload='init()' onmousedown='mouseDownHandler(event)' onmousemove='mouseMoveHandler(event)'>
+<body onload='init()' >
 	<div id='stage'>
 		<div id='world'>
 		</div>
