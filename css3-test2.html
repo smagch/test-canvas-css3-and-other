@@ -121,13 +121,16 @@
 		var world = document.getElementById('world'),
 			worldView = new WebKitCSSMatrix(),
 			rot = 0,
-			halfW = window.outerWidth / 2,
+			halfW = window.innerWidth / 2,
 			halfH = window.innerHeight / 2;
 		
 		var stage = document.getElementById('stage');
 		stage.style.webkitPerspectiveOrigin = '50% ' + halfH + 'px';
 		
 		var halfBoxSize = ( 70 * 3 - 10 ) / 4;
+		
+		var mouseXBuffer = 0,
+			mouseYBuffer = 0;
 			
 		function update() {
 			
@@ -137,8 +140,11 @@
 			// 			world.style.webkitTransform = m.rotateAxisAngle(0,1,0,1);
 			
 			//world.style.webkitTransform = worldView.rotateAxisAngle(0,1,0,rot++);
-			var rotateY = ( mouseX - halfW ) / halfW * 180,
-				rotateX = ( mouseY - halfH ) / halfH * 180;
+			mouseXBuffer += ( mouseX - mouseXBuffer ) * 0.2;
+			mouseYBuffer += ( mouseY - mouseYBuffer ) * 0.2;
+			
+			var	rotateY = ( mouseXBuffer - halfW ) / halfW * 180,
+				rotateX = ( mouseYBuffer - halfH ) / halfH * 180;
 			//console.log('mouseY : ' + mouseY);
 			world.style.webkitTransform = worldView.translate(0,halfH-10 ,0)
 				.rotateAxisAngle(0,1,0, rotateY).rotateAxisAngle(1,0,0, rotateX)
