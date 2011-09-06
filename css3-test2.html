@@ -1,6 +1,7 @@
 <html lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="user-scalable=no, width=device-width"/>
   <title>Webkit CSS3 Test</title>
   <style>
     body {
@@ -21,7 +22,6 @@
         height: 0;
         -webkit-perspective: 800;
 		-webkit-transform-style: preserve-3d;
-		-webkit-perspective-origin: 50% 50%;
     }
 	#world {
 		margin: 0 auto;
@@ -46,7 +46,7 @@
 		opacity: 0.6;
 		border:1px solid red;
         -webkit-transform-style: flat;
-		/*-webkit-transform:rotateX(40deg);*/
+		
 	}
 	@-webkit-keyframes y-spin {
         0%    { -webkit-transform: rotateY(0deg); }
@@ -84,8 +84,7 @@
 				var parent = document.getElementById(parentId);
 				var box = document.createElement('div');
 				box.className = 'box';
-				//box.style.width = size * 2;
-				// box.style.height = size * 2;
+				
 				for(var i = 0; i < 6 ; ++i) {
 					var div = document.createElement('div');
 					div.className = 'plane';
@@ -124,7 +123,11 @@
 			rot = 0,
 			halfW = window.outerWidth / 2,
 			halfH = window.innerHeight / 2;
-			console.log('halfH : ' + halfH);
+		
+		var stage = document.getElementById('stage');
+		stage.style.webkitPerspectiveOrigin = '50% ' + halfH + 'px';
+		
+		var halfBoxSize = ( 70 * 3 - 10 ) / 4;
 			
 		function update() {
 			
@@ -137,8 +140,9 @@
 			var rotateY = ( mouseX - halfW ) / halfW * 180,
 				rotateX = ( mouseY - halfH ) / halfH * 180;
 			//console.log('mouseY : ' + mouseY);
-			world.style.webkitTransform = worldView.translate(0,halfH+35,0)
-				.rotateAxisAngle(0,1,0, rotateY).rotateAxisAngle(1,0,0, rotateX);
+			world.style.webkitTransform = worldView.translate(0,halfH-10 ,0)
+				.rotateAxisAngle(0,1,0, rotateY).rotateAxisAngle(1,0,0, rotateX)
+				.translate(0, 0, halfBoxSize);
  		}
 		
 		(function animloop() {
