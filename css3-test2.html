@@ -27,7 +27,6 @@
 		margin: 0 auto;
 		position: absolute;
 		-webkit-transform-style: preserve-3d;
-		
 	}
 	.box {
 		margin: 0 auto;
@@ -100,13 +99,14 @@
 			createBigBox : function( cubeNum, parentId, cubeSize, span ) {
 				var size = cubeSize + span;
 				var offset = (size * cubeNum - span) * -0.5;
+				var offsetZ = offset * 0.75;
 				for(var i = 0; i < cubeNum; i++ ) {
 					for(var j = 0; j < cubeNum; j++) {
 						for(var k = 0; k < cubeNum; k++) {
 							var box = Util.createBox(cubeSize, parentId );
 							box.style.webkitTransform = 'translateX(' + ( offset + size * i ) + 'px) ' + 
 														'translateY(' + ( offset + size * j ) + 'px) ' + 
-														'translateZ(' + ( offset + size * k ) + 'px)';
+														'translateZ(' + ( offsetZ + size * k ) + 'px)';
 						}
 					}
 				}
@@ -120,9 +120,8 @@
 		
 		var render = function(worldId) { 
 			this.resize();
-			
 			world = document.getElementById(worldId || 'world');
-		};
+		}
 		
 		var mouseX = 0, 
 			mouseY = 0,
@@ -130,7 +129,8 @@
 			mouseYBuffer = 0,
 			world,
 			worldView = new WebKitCSSMatrix();
-			halfBoxSize = ( 30 * 3 - 30 ) / 4;
+			
+		
 		
 		
 		render.prototype.update = function() {
@@ -141,10 +141,9 @@
 			var	rotateY = ( mouseXBuffer - halfW ) / halfW * 180,
 				rotateX = ( mouseYBuffer - halfH ) / halfH * 180;
 			
-			world.style.webkitTransform = worldView.translate(0,halfH-10 ,0)
-				.rotateAxisAngle(0,1,0, rotateY).rotateAxisAngle(1,0,0, rotateX)
-				.translate(0, 0, halfBoxSize);
-		};
+			world.style.webkitTransform = worldView.translate(0,halfH ,0)
+				.rotateAxisAngle(0,1,0, rotateY).rotateAxisAngle(1,0,0, rotateX);
+		}
 		
 		render.prototype.resize = function() {
 			halfW = window.innerWidth / 2;
@@ -156,7 +155,7 @@
 		
 		window.onresize = function(event) {
 			render.prototype.resize();
-		};
+		}
 		
 		window.onmousemove = function (event) {
 			mouseX = event.clientX;
@@ -170,7 +169,8 @@
 	
 	function init() {
 		
-		Util.createBigBox(3, 'world', 30, 30);
+		Util.createBigBox(3, 'world', 50, 30);
+		var world = document.getElementById('world');
 		var render = new Render('world');
 		
 		(function animloop() {
