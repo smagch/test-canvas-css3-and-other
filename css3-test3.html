@@ -168,10 +168,10 @@
 			mat4.multiplyVec3(modelView, [0,0,0], newPos); 
 			console.log(newPos.toString());
 			world.style.webkitTransform = worldView
-											.translate(halfW,halfH, 0)
+											.translate(halfW,halfH,0)
 											.rotateAxisAngle(1,0,0, -rotateX)
 											.rotateAxisAngle(0,1,0, -rotateY)
-											.translate(-newPos[0],-newPos[1],newPos[2]-800)
+											.translate(-newPos[0],-newPos[1],-newPos[2])
 											.translate(pos[0],pos[1],pos[2])
 
 											//
@@ -205,7 +205,7 @@
 		}
 		
 		window.onmousedown = function(event) {
-			pos[2] += 100;
+			pos[2] -= 100;
 		}
 		
 		return render;
