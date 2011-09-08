@@ -149,14 +149,14 @@
 			
 			// var	rotateY = ( mouseXBuffer - halfW ) / halfW * 180,
 			// 				rotateX = ( mouseYBuffer - halfH ) / halfH * 180;
-			var	rotateY = -( mouseXBuffer - halfW ) / halfW * 40,
-				rotateX = ( mouseYBuffer - halfH ) / halfH * 40;
+			var	rotateY = -( mouseXBuffer - halfW ) / halfW * 30,
+				rotateX = ( mouseYBuffer - halfH ) / halfH * 30;
 			
 			var originX = ( mouseXBuffer - halfW ) * -1 + halfW,
-				originY = ( mouseYBuffer - halfH ) * -1 + halfH;
+				originY = ( mouseYBuffer - halfH ) * 1 + halfH;
 			
 
-			stage.style.webkitPerspectiveOrigin = '' + originX + 'px ' + originY + 'py';
+			//stage.style.webkitPerspectiveOrigin = '' + originX + 'px ' + originY + 'py';
 		//	stage.style.webkitPerspectiveOrigin = halfW + 'px ' + halfH
 		
 			modelView = mat4.create();
@@ -169,10 +169,13 @@
 			console.log(newPos.toString());
 			world.style.webkitTransform = worldView
 											.translate(halfW,halfH, 0)
+											.rotateAxisAngle(1,0,0, -rotateX)
+											.rotateAxisAngle(0,1,0, -rotateY)
 											.translate(-newPos[0],-newPos[1],newPos[2]-800)
 											.translate(pos[0],pos[1],pos[2])
-											.rotateAxisAngle(0,1,0, -rotateY)
-											.rotateAxisAngle(1,0,0, -rotateX)
+
+											//
+											//
 											;
 
 											
@@ -212,7 +215,7 @@
 	
 	function init() {
 		
-		Util.createBigBox(3, 'world', 40, 10);
+		Util.createBigBox(3, 'world', 140, 10);
 		var world = document.getElementById('world');
 		
 		var render = new Render('world');
