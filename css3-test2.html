@@ -32,10 +32,6 @@
 		margin: 0 auto;
 		position: absolute;
 		-webkit-transform-style: preserve-3d;
-		/*-webkit-animation-name: y-spin;
-				-webkit-animation-duration: 10s;
-				-webkit-animation-iteration-count: infinite;
-		        -webkit-animation-timing-function: linear;*/
 	}
 	.plane {
 		margin: 0 auto;
@@ -46,11 +42,6 @@
         -webkit-transform-style: flat;
 		-webkit-backface-visibility: hidden;
 	}
-	@-webkit-keyframes y-spin {
-        0%    { -webkit-transform: rotateY(0deg); }
-        50%   { -webkit-transform: rotateY(180deg); }
-        100%  { -webkit-transform: rotateY(360deg); }
-    }
   </style>
   <script>
 
@@ -132,7 +123,7 @@
 			
 		
 		
-		//var flag = true;
+		//var flag = true;// to set frameRate 30
 		render.prototype.update = function() {
 			// flag = !flag;
 			// 			if(flag) {

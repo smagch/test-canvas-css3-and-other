@@ -2,6 +2,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="user-scalable=no, width=device-width"/>
+  <script src="glMatrix-0.9.5.min.js" type="text/javascript" charset="utf-8"></script>
   <title>Webkit CSS3 Test</title>
   <style>
     body {
@@ -18,9 +19,10 @@
     }
 	#stage {
         margin: 0 auto;
-        width: 0;
-        height: 0;
-        -webkit-perspective: 800;
+		position: relative;
+     /*   width: 0;
+             height: 0;*/
+        -webkit-perspective: 800px;
 		-webkit-transform-style: preserve-3d;
     }
 	#world {
@@ -117,10 +119,11 @@
 	})();
 	
 	window.Render = (function() {
-		
+		console.log('render');
 		var render = function(worldId) { 
 			this.resize();
-			world = document.getElementById(worldId || 'world');
+			world = document.getElementById(worldId);
+			worldView = new WebKitCSSMatrix();
 		}
 		
 		var mouseX = 0, 
@@ -128,10 +131,12 @@
 			mouseXBuffer = 0,
 			mouseYBuffer = 0,
 			world,
-			worldView = new WebKitCSSMatrix();
-			
+			worldView,
+			pos=[0,0,0];
 		
 		
+	
+
 		//var flag = true;
 		render.prototype.update = function() {
 			// flag = !flag;
@@ -142,28 +147,62 @@
 			mouseXBuffer += ( mouseX - mouseXBuffer ) * 0.1;
 			mouseYBuffer += ( mouseY - mouseYBuffer ) * 0.1;
 			
-			var	rotateY = ( mouseXBuffer - halfW ) / halfW * 180,
-				rotateX = ( mouseYBuffer - halfH ) / halfH * 180;
+			// var	rotateY = ( mouseXBuffer - halfW ) / halfW * 180,
+			// 				rotateX = ( mouseYBuffer - halfH ) / halfH * 180;
+			var	rotateY = -( mouseXBuffer - halfW ) / halfW * 40,
+				rotateX = ( mouseYBuffer - halfH ) / halfH * 40;
 			
-			world.style.webkitTransform = worldView.translate(0,halfH ,0)
-				.rotateAxisAngle(0,1,0, rotateY).rotateAxisAngle(1,0,0, rotateX);
+			var originX = ( mouseXBuffer - halfW ) * -1 + halfW,
+				originY = ( mouseYBuffer - halfH ) * -1 + halfH;
+			
+
+			stage.style.webkitPerspectiveOrigin = '' + originX + 'px ' + originY + 'py';
+		//	stage.style.webkitPerspectiveOrigin = halfW + 'px ' + halfH
+		
+			modelView = mat4.create();
+			mat4.identity(modelView);
+			mat4.rotate(modelView, Math.PI/180 * rotateY, [0,1,0]);
+			mat4.rotate(modelView, Math.PI/180 * rotateX, [1,0,0]);
+			mat4.translate(modelView, [0,0,-800]);
+			var newPos = [0,0,0];
+			mat4.multiplyVec3(modelView, [0,0,0], newPos); 
+			console.log(newPos.toString());
+			world.style.webkitTransform = worldView
+											.translate(halfW,halfH, 0)
+											.translate(-newPos[0],-newPos[1],newPos[2]-800)
+											.translate(pos[0],pos[1],pos[2])
+											.rotateAxisAngle(0,1,0, -rotateY)
+											.rotateAxisAngle(1,0,0, -rotateX)
+											;
+
+											
+			//world.style.webkitTransform = worldView.translate(0,halfH ,0)
+				//.rotateAxisAngle(0,1,0, rotateY).rotateAxisAngle(1,0,0, rotateX);
+				
 		}
 		
 		render.prototype.resize = function() {
 			halfW = window.innerWidth / 2;
 			halfH = window.innerHeight / 2;
 			var stage = document.getElementById('stage');
-			stage.style.webkitPerspectiveOrigin = '50% ' + halfH + 'px';
+			stage.style.webkitPerspectiveOrigin = '' + halfW + 'px ' + halfH + 'px';
 		}
 		
 		
 		window.onresize = function(event) {
 			render.prototype.resize();
+			// if(stage) {
+			// 				console.log(stage.style.webkitTransform);
+			// 			}
 		}
 		
 		window.onmousemove = function (event) {
 			mouseX = event.clientX;
 			mouseY = event.clientY;
+		}
+		
+		window.onmousedown = function(event) {
+			pos[2] += 100;
 		}
 		
 		return render;
@@ -173,8 +212,9 @@
 	
 	function init() {
 		
-		Util.createBigBox(3, 'world', 40, 30);
+		Util.createBigBox(3, 'world', 40, 10);
 		var world = document.getElementById('world');
+		
 		var render = new Render('world');
 		
 		(function animloop() {
