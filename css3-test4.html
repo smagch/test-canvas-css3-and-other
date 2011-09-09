@@ -35,10 +35,7 @@
 		margin: 0 auto;
 		position: absolute;
 		-webkit-transform-style: preserve-3d;
-		/*-webkit-animation-name: y-spin;
-				-webkit-animation-duration: 10s;
-				-webkit-animation-iteration-count: infinite;
-		        -webkit-animation-timing-function: linear;*/
+		
 	}
 	.plane {
 		margin: 0 auto;
@@ -86,6 +83,20 @@
 			
 					
 		return {
+			
+			createPlane : function( size, parent) {
+				if(typeof parent === 'string') {
+					parent = document.getElementById(parent);	
+				}
+				
+				var div = document.createElement(div);
+				div.className = 'plane';
+				div.style.width = size;
+				div.style.height = size;
+				parent.appendChild(div);
+				return div;
+			},
+			
 			createBox : function(size, parent) { // width = height = size;
 				if( typeof parent === 'string') {
 					parent = document.getElementById(parent);
@@ -94,14 +105,9 @@
 				box.className = 'box';
 				
 				for(var i = 0; i < 6 ; ++i) {
-					// var div = document.createElement('div');
-					// 					div.className = 'plane';
-					// 					div.style.width = size;
-					// 					div.style.height = size;
 					var div = Util.createPlane(size, box);
 					var m = mats[i];
 					div.style.webkitTransform = m.translate(0,0,size/2);
-					//box.appendChild(div);
 				}
 				
 				parent.appendChild(box);
@@ -126,20 +132,9 @@
 						}
 					}
 				}
-			},
-			
-			createPlane : function( size, parent) {
-				if(typeof parent === 'string') {
-					parent = document.getElementById(parent);	
-				}
-				
-				var div = document.createElement(div);
-				div.className = 'plane';
-				div.style.width = size;
-				div.style.height = size;
-				parent.appendChild(div);
-				return div;
 			}
+			
+			
 		};
 	})();
 	
@@ -214,9 +209,6 @@
 			pos[2] -= 100;
 		}
 		
-		window.onscroll = function(event) {
-			console.log('scroll');
-		}
 		
 		return handler;
 	})();

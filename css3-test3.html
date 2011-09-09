@@ -16,6 +16,7 @@
 	                            from(rgba(255, 255, 255, 0.3)),
 	                            to(rgba(255, 255, 255, 0)));
 	    background-repeat: no-repeat;
+		overflow: hidden;
     }
 	#stage {
         margin: 0 auto;
@@ -34,10 +35,7 @@
 		margin: 0 auto;
 		position: absolute;
 		-webkit-transform-style: preserve-3d;
-		/*-webkit-animation-name: y-spin;
-				-webkit-animation-duration: 10s;
-				-webkit-animation-iteration-count: infinite;
-		        -webkit-animation-timing-function: linear;*/
+		
 	}
 	.plane {
 		margin: 0 auto;
@@ -48,12 +46,17 @@
         -webkit-transform-style: flat;
 		-webkit-backface-visibility: hidden;
 	}
+	.plane:hover {
+		background-color:green;
+	}
 	@-webkit-keyframes y-spin {
         0%    { -webkit-transform: rotateY(0deg); }
         50%   { -webkit-transform: rotateY(180deg); }
         100%  { -webkit-transform: rotateY(360deg); }
     }
   </style>
+
+
   <script>
 
 	// requestAnim shim layer by Paul Irish
@@ -80,47 +83,64 @@
 			
 					
 		return {
-			createBox : function(size, parentId) { // width = height = size;
-				var parent = document.getElementById(parentId);
+			
+			createPlane : function( size, parent) {
+				if(typeof parent === 'string') {
+					parent = document.getElementById(parent);	
+				}
+				
+				var div = document.createElement(div);
+				div.className = 'plane';
+				div.style.width = size;
+				div.style.height = size;
+				parent.appendChild(div);
+				return div;
+			},
+			
+			createBox : function(size, parent) { // width = height = size;
+				if( typeof parent === 'string') {
+					parent = document.getElementById(parent);
+				}
 				var box = document.createElement('div');
 				box.className = 'box';
 				
 				for(var i = 0; i < 6 ; ++i) {
-					var div = document.createElement('div');
-					div.className = 'plane';
-					div.style.width = size;
-					div.style.height = size;
+					var div = Util.createPlane(size, box);
 					var m = mats[i];
 					div.style.webkitTransform = m.translate(0,0,size/2);
-					box.appendChild(div);
 				}
 				
 				parent.appendChild(box);
 				return box;
 			},
-			createBigBox : function( cubeNum, parentId, cubeSize, span ) {
+			
+			createBigBox : function( cubeNum, parent, cubeSize, span ) {
+				if(typeof parent === 'string') {
+					parent = document.getElementById(parent);
+				}
+				
 				var size = cubeSize + span;
 				var offset = (size * cubeNum - span) * -0.5;
 				var offsetZ = -size * (cubeNum - 1) * 0.5;
 				for(var i = 0; i < cubeNum; i++ ) {
 					for(var j = 0; j < cubeNum; j++) {
 						for(var k = 0; k < cubeNum; k++) {
-							var box = Util.createBox(cubeSize, parentId );
+							var box = Util.createBox(cubeSize, parent );
 							box.style.webkitTransform = 'translateX(' + ( offset + size * i ) + 'px) ' + 
 														'translateY(' + ( offset + size * j ) + 'px) ' + 
 														'translateZ(' + ( offsetZ + size * k ) + 'px)';
 						}
 					}
 				}
-				
-				
 			}
+			
+			
 		};
 	})();
 	
-	window.Render = (function() {
-		console.log('render');
-		var render = function(worldId) { 
+	window.Handler = (function() {
+		
+		var handler = function(worldId) { 
 			this.resize();
 			world = document.getElementById(worldId);
 			worldView = new WebKitCSSMatrix();
@@ -132,17 +152,13 @@
 			mouseYBuffer = 0,
 			world,
 			worldView,
-			pos=[0,0,0];
-		
-		
+			pos=[0,0,-800],
+			TO_RADIAN = Math.PI / 180,
+			modelView = mat4.create();
 	
 
-		//var flag = true;
-		render.prototype.update = function() {
-			// flag = !flag;
-			// 			if(flag) {
-			// 				return;
-			// 			}
+	
+		handler.prototype.update = function() {
 			
 			mouseXBuffer += ( mouseX - mouseXBuffer ) * 0.1;
 			mouseYBuffer += ( mouseY - mouseYBuffer ) * 0.1;
@@ -152,39 +168,27 @@
 			var	rotateY = -( mouseXBuffer - halfW ) / halfW * 30,
 				rotateX = ( mouseYBuffer - halfH ) / halfH * 30;
 			
-			var originX = ( mouseXBuffer - halfW ) * -1 + halfW,
-				originY = ( mouseYBuffer - halfH ) * 1 + halfH;
 			
-
-			//stage.style.webkitPerspectiveOrigin = '' + originX + 'px ' + originY + 'py';
-		//	stage.style.webkitPerspectiveOrigin = halfW + 'px ' + halfH
+			
 		
-			modelView = mat4.create();
 			mat4.identity(modelView);
-			mat4.rotate(modelView, Math.PI/180 * rotateY, [0,1,0]);
-			mat4.rotate(modelView, Math.PI/180 * rotateX, [1,0,0]);
-			mat4.translate(modelView, [0,0,-800]);
+			mat4.rotate(modelView, TO_RADIAN * rotateY, [0,1,0]);
+			mat4.rotate(modelView, TO_RADIAN * rotateX, [1,0,0]);
+			mat4.translate(modelView, [0,0,-800]);//stage's -webkit-perspective: 800px;
 			var newPos = [0,0,0];
 			mat4.multiplyVec3(modelView, [0,0,0], newPos); 
-			console.log(newPos.toString());
+			
 			world.style.webkitTransform = worldView
 											.translate(halfW,halfH,0)
 											.rotateAxisAngle(1,0,0, -rotateX)
 											.rotateAxisAngle(0,1,0, -rotateY)
 											.translate(-newPos[0],-newPos[1],-newPos[2])
 											.translate(pos[0],pos[1],pos[2])
-
-											//
-											//
 											;
-
-											
-			//world.style.webkitTransform = worldView.translate(0,halfH ,0)
-				//.rotateAxisAngle(0,1,0, rotateY).rotateAxisAngle(1,0,0, rotateX);
 				
 		}
 		
-		render.prototype.resize = function() {
+		handler.prototype.resize = function() {
 			halfW = window.innerWidth / 2;
 			halfH = window.innerHeight / 2;
 			var stage = document.getElementById('stage');
@@ -193,10 +197,7 @@
 		
 		
 		window.onresize = function(event) {
-			render.prototype.resize();
-			// if(stage) {
-			// 				console.log(stage.style.webkitTransform);
-			// 			}
+			handler.prototype.resize();
 		}
 		
 		window.onmousemove = function (event) {
@@ -208,7 +209,8 @@
 			pos[2] -= 100;
 		}
 		
-		return render;
+		
+		return handler;
 	})();
 	
 	
@@ -218,10 +220,10 @@
 		Util.createBigBox(3, 'world', 140, 10);
 		var world = document.getElementById('world');
 		
-		var render = new Render('world');
+		var handler = new Handler('world');
 		
 		(function animloop() {
-		      render.update();
+		      handler.update();
 		      requestAnimFrame(animloop);
 		})();
 	};
