@@ -1,0 +1,178 @@
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>testDrag</title>
+	<style>
+		body {
+	      	background-color: black;
+		    color: white;
+		    font-family: 'Lucida Grande', Verdana, Arial;
+		    font-size: 12px;
+		    background-image: -webkit-gradient(radial,
+		                            50% 500, 1,
+		                            50% 500, 400,
+		                            from(rgba(255, 255, 255, 0.3)),
+		                            to(rgba(255, 255, 255, 0)));
+		    background-repeat: no-repeat;
+			position: absolute;
+	    }
+		#stage {
+	        margin: 0 auto;
+			position: absolute;
+	    
+	    }
+		.box {
+			background-color:#e0f0e0;
+			position: absolute;
+			color: blue;
+			width:200px;
+			height:200px;
+		}
+		.plane {
+            background-color:#e0f0e0;
+			position: absolute;
+			color: blue;
+		}
+		
+		/*.plane:hover {
+					background-color:green;
+				}*/
+	
+	  </style>
+		
+	
+	<script type="text/javascript" charset="utf-8">
+		// requestAnim shim layer by Paul Irish
+		window.requestAnimFrame = (function(){
+			return  window.requestAnimationFrame       || 
+		            window.webkitRequestAnimationFrame || 
+		            window.mozRequestAnimationFrame    || 
+		            window.oRequestAnimationFrame      || 
+		            window.msRequestAnimationFrame     || 
+		            function(/* function */ callback, /* DOMElement */ element){
+		            	window.setTimeout(callback, 1000 / 60);
+		            };
+		})();
+		
+	</script>
+	<script>
+	 window.Util = (function() {
+		return {
+			createPlane : function( size, parent) {
+				if(typeof parent === 'string') {
+					parent = document.getElementById(parent);	
+				}
+
+				var div = document.createElement('div');
+				div.className = 'plane';
+				div.style.width = size;
+				div.style.height = size;
+				parent.appendChild(div);
+				return div;
+			},
+			
+			createTile : function( numX, numY, tileSize, space, parent) {
+				if(typeof parent === 'string') {
+					parent = document.getElementById(parent);
+				}
+				var span = tileSize + space,
+					offsetX = 0;//(span * numX - space) * -0.5,
+					offsetY = 0;//(span * numY - space) * -0.5;
+
+				for(var i = 0; i < numX ; i++) {
+					for(var j = 0; j < numY ; j++) {
+						var div = Util.createPlane(tileSize, parent);
+						//div.draggable = true;
+						//div.onDragStart = true;
+						//div.webkit
+						div.textContent = '' + (i*numX + j);
+								
+						
+						div.style.backgroundColor = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+						div.style.left = (span * j) + 'px';
+						div.style.top = 200 + (span * i ) + 'px';
+						// div.style.webkitTransform = 'translateX(' + ( offsetX + span * i ) + 'px) ' + 
+						// 													'translateY(' + ( offsetY + span * j ) + 'px)';
+						
+					}
+				}
+
+					
+
+
+			}
+		}
+	})();
+	</script>
+	
+	<script>
+		window.Handler = (function() {
+			
+			function handler() {
+				
+			};
+			
+			handler.prototype.update = function() {
+				// body...
+			};
+			
+			return handler;
+		})();
+		
+	</script>
+	
+	<script>
+	var isMouseDown = false,
+		draggingElement,
+		offsetX = 0,
+		offsetY = 0;
+	
+	var moveHandler = function (e) {
+		console.log('dragging!!!');
+		// if(!e.target || e.target != draggingElement) {
+		// 			//onmouseup();
+		// 			console.log('return!!!');
+		// 			return true;
+		// 		}
+		draggingElement.style.left = offsetX + e.clientX;
+		draggingElement.style.top =  offsetY + e.clientY;
+		return false;
+	}
+	window.onmousedown = function(e) {
+		var element = e.target;
+		if(element.className == 'plane') {
+			isMouseDown = true;			
+			window.onmousemove = moveHandler;
+			offsetX = parseInt(element.style.left) - e.clientX;
+			offsetY = parseInt(element.style.top) - e.clientY;
+			console.log('down client: ' + offsetX + ', ' + offsetY);
+			draggingElement = element;
+
+			return false;
+		}
+	};
+	window.onmouseup = function(e) {
+		console.log('onmouseup!!!');
+		isMouseDown = false;
+		window.onmousemove = undefined;
+	};
+	function init () {
+		//createTile : function( numX, numY, tileSize, space, parent) {
+		Util.createTile(5,5,50,10,'stage');
+		
+		var handler = new Handler();
+		
+		(function animloop()){
+			handler.update();
+			requestAnimFrame(animloop);
+		})();
+	}
+	</script>
+	
+</head>
+<body onload='init()'>
+	<div id='stage'>
+	</div>
+	
+</body>
+</html>
