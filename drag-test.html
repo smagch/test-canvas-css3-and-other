@@ -86,11 +86,13 @@
 						//div.onDragStart = true;
 						//div.webkit
 						div.textContent = '' + (i*numX + j);
-								
+						div.dataset.x = (span * j);
+						div.dataset.y = (span * i);
+						div.dataset.index = i;
 						
-						div.style.backgroundColor = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+						div.style.backgroundColor = '#'+(Math.random()*0xFFFFFF>>0).toString(16);
 						div.style.left = (span * j) + 'px';
-						div.style.top = 200 + (span * i ) + 'px';
+						div.style.top =  (span * i ) + 'px';
 						// div.style.webkitTransform = 'translateX(' + ( offsetX + span * i ) + 'px) ' + 
 						// 													'translateY(' + ( offsetY + span * j ) + 'px)';
 						
@@ -125,19 +127,35 @@
 	var isMouseDown = false,
 		draggingElement,
 		offsetX = 0,
-		offsetY = 0;
+		offsetY = 0,
+		isDirty = false;
 	
 	var moveHandler = function (e) {
 		console.log('dragging!!!');
-		// if(!e.target || e.target != draggingElement) {
-		// 			//onmouseup();
-		// 			console.log('return!!!');
-		// 			return true;
-		// 		}
-		draggingElement.style.left = offsetX + e.clientX;
-		draggingElement.style.top =  offsetY + e.clientY;
+		
+		if(isDirty) {
+			return;
+		}
+		isDirty = true;
+		requestAnimFrame(function(){
+			var x = offsetX + e.clientX,
+				y = offsetY + e.clientY,
+				dx = draggingElement.dataset.x - x,
+				dy = draggingElement.dataset.y - y;
+
+			draggingElement.style.left = x;
+			draggingElement.style.top = y;
+
+			if( Math.abs(dx) > SPAN/2 || Math.abs(dy) > SPAN/2) {
+				console.log('out');
+				updateLayout(x,y);
+			}
+			isDirty = false;
+		});
+	
 		return false;
 	}
+	
 	window.onmousedown = function(e) {
 		var element = e.target;
 		if(element.className == 'plane') {
@@ -147,25 +165,38 @@
 			offsetY = parseInt(element.style.top) - e.clientY;
 			console.log('down client: ' + offsetX + ', ' + offsetY);
 			draggingElement = element;
+			//element.addEventListener('mousemove', moveHandler, false);
 
 			return false;
 		}
 	};
+	
 	window.onmouseup = function(e) {
 		console.log('onmouseup!!!');
 		isMouseDown = false;
+		if(draggingElement) {
+			draggingElement.style.left = draggingElement.dataset.x;
+			draggingElement.style.top = draggingElement.dataset.y;
+		}
 		window.onmousemove = undefined;
 	};
+	
+	window.updateLayout = function(x,y) {
+		var closestIndex = Math.floor(x / SPAN);
+	}
+	
+	SPAN = 50 + 10;
 	function init () {
 		//createTile : function( numX, numY, tileSize, space, parent) {
-		Util.createTile(5,5,50,10,'stage');
+		Util.createTile(1,10,50,10,'stage');
 		
-		var handler = new Handler();
 		
-		(function animloop()){
-			handler.update();
-			requestAnimFrame(animloop);
-		})();
+		//var handler = new Handler();
+		
+		// (function animloop(){
+		// 			handler.update();
+		// 			requestAnimFrame(animloop);
+		// 		})();
 	}
 	</script>
 	
