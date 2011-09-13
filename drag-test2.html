@@ -40,8 +40,8 @@
 		
 	
 	<script type="text/javascript" charset="utf-8">
-		// requestAnim shim layer by Paul Irish
-		window.requestAnimFrame = (function(){
+		
+		window.requestAnimationFrame = (function(){
 			return  window.requestAnimationFrame       || 
 		            window.webkitRequestAnimationFrame || 
 		            window.mozRequestAnimationFrame    || 
@@ -58,7 +58,8 @@
 	</script>
 	<script>
 	 window.Util = (function() {
-		var TRANSITION_EVENT_TYPE = (function() {
+		
+		const TRANSITION_EVENT_TYPE = (function() {
 		 	return 	window.WebKitTransitionEvent ? 'webkitTransitionEnd' : 
 					window.TransitionEvent ? 'transitionend' : 
 					window.opera ? 'oTransitionEnd' :
@@ -66,8 +67,24 @@
 		})();
 		console.log('TRANSITION_EVENT_TYPE : ' + TRANSITION_EVENT_TYPE);
 		
-		var divs = [ ];
+		var divs = [ ],
+			span = 0,
+			numX = 0,
+			numY = 0;
+			
+		function setLayoutByIndex(element, index) {
+			element.style.left = span * (index % numX);
+			element.style.top = span * Math.floor(index/numX);
+		};
+		
 		return {
+			
+			getIndexByPoint : function(x, y){
+				var posX = Math.round(x / span);
+				var posY = Math.round(y / span);
+				return posX + posY * numX;
+				//return Math.round(x / span);
+			},
 			
 			createPlane : function( size, parent) {
 				if(typeof parent === 'string') {
@@ -83,35 +100,30 @@
 				return div;
 			},
 			
-			createTile : function( numX, numY, tileSize, space, parent) {
+			createTile : function( xNum, yNum, tileSize, space, parent) {
 				if(typeof parent === 'string') {
 					parent = document.getElementById(parent);
 				}
-				var span = tileSize + space,
-					offsetX = 0;//(span * numX - space) * -0.5,
-					offsetY = 0;//(span * numY - space) * -0.5;
-				var counter = 0;
-				for(var i = 0; i < numX ; i++) {
-					for(var j = 0; j < numY ; j++) {
-						var div = Util.createPlane(tileSize, parent);
-						//div.draggable = true;
-						//div.onDragStart = true;
-						//div.webkit
-						//div.textContent = '' + (i*numX + j);
-						div.dataset.x = (span * j);
-						div.dataset.y = (span * i);
-						divs[counter] = div;
-						div.dataset.index = counter++;
-						
-						div.dataset.span = span;
-						div.style.backgroundColor = '#'+(Math.random()*0xFFFFFF>>0).toString(16);
-						div.style.left = (span * j) + 'px';
-						div.style.top =  (span * i ) + 'px';
-						// div.style.webkitTransform = 'translateX(' + ( offsetX + span * i ) + 'px) ' + 
-						// 													'translateY(' + ( offsetY + span * j ) + 'px)';
-						
-					}
+				span = tileSize + space;
+				numX = xNum;
+				numY = yNum;
+				
+				for(var i = 0, limit = numX * numY; i < limit ; i++) {
+					
+					var div = Util.createPlane(tileSize, parent);
+
+					divs[i] = div;
+					div.dataset.index = i;
+					
+					div.style.backgroundColor = '#'+(Math.random()*0xFFFFFF>>0).toString(16);
+					setLayoutByIndex(div, i);
+					
 				}
+			},
+			
+			isOutOfBounds : function(index) {
+				var total = numX * numY;
+				return (index < 0  || index >= total ) ;
 			},
 			
 			shiftElements: function(oldIndex, destIndex){
@@ -158,15 +170,10 @@
 		        }
 		    },
 		
-			animTo : function(element, x, y) {
-				//console.log('className : ' + element.className);
+			animTo : function(element, index) {
 				Util.addClassName( element, 'anim');
-				//console.log('className : ' + element.className);
-				element.style.left = x;
 				
-				if(y != undefined) {
-					element.style.top = y;
-				}
+				setLayoutByIndex(element, index);
 				
 				element.addEventListener( 
 					TRANSITION_EVENT_TYPE, 
@@ -180,30 +187,19 @@
 				);
 			},
 			
-			changeIndex : function(element, index ) {
-				var span = parseInt(element.dataset.span);
-				var destX = span * index;
+			changeIndex : function(element, index ) {	
+				//var destX = span * index;
 				element.dataset.index = index;
-				Util.animTo(element, destX);
+				Util.animTo(element, index);
+				//Util.animTo(element, destX);
+			},
+			
+			returnToPosition : function(element) {
+				var index = element.dataset.index;
+				Util.animTo(element, index);
 			}
 		};
 	})();
-	</script>
-	
-	<script>
-		window.Handler = (function() {
-			
-			function handler() {
-				
-			};
-			
-			handler.prototype.update = function() {
-				// body...
-			};
-			
-			return handler;
-		})();
-		
 	</script>
 	
 	<script>
@@ -223,19 +219,16 @@
 		var x = offsetX + e.clientX,
 			y = offsetY + e.clientY;
 		
-		requestAnimFrame(function(){
+		requestAnimationFrame(function(){
 			draggingElement.style.left = x;
 			draggingElement.style.top = y;
-			// if( Math.abs(dx) > SPAN/2 || Math.abs(dy) > SPAN/2) {
-			// 				console.log('out');
-			// 				updateLayout(x,y);
-			// 			}
+			
 			isDirty = false;
 		});
 		
-		var destIndex = Math.round(x / parseInt(draggingElement.dataset.span));
+		var destIndex = Util.getIndexByPoint(x, y);
 		
-		if(	!(destIndex < 0  || destIndex >= TOTAL ) &&
+		if(	!Util.isOutOfBounds(destIndex) &&
 			draggingElement.dataset.index != destIndex) {
 			
 			var oldIndex = parseInt(draggingElement.dataset.index);
@@ -255,8 +248,6 @@
 			offsetY = parseInt(element.style.top) - e.clientY;
 			console.log('down client: ' + offsetX + ', ' + offsetY);
 			draggingElement = element;
-			//element.addEventListener('mousemove', moveHandler, false);
-
 			return false;
 		}else {
 			console.log('not plane : ' + element.className);
@@ -270,32 +261,17 @@
 		if(!draggingElement) {
 			return;
 		}
-		var index = parseInt(draggingElement.dataset.index);
-		var span = parseInt(draggingElement.dataset.span);
-		var destX = span * index;
-		var destY = 0;
-		
-		Util.animTo(draggingElement, destX, destY);
+		Util.returnToPosition(draggingElement);
 		draggingElement = undefined;
 	};
 	
-	// window.updateLayout = function(x,y) {
-	// 	var closestIndex = Math.floor(x / SPAN);
-	// }
 	
-	//SPAN = 50 + 10;
-	var TOTAL = 10;
+	
 	function init () {
 		//createTile : function( numX, numY, tileSize, space, parent) {
-		Util.createTile(1,10,50,10,'stage');
+		Util.createTile(10,4,50,10,'stage');
 		
 		
-		//var handler = new Handler();
-		
-		// (function animloop(){
-		// 			handler.update();
-		// 			requestAnimFrame(animloop);
-		// 		})();
 	}
 	</script>
 	
