@@ -33,10 +33,10 @@
 			position: absolute;
 			color: blue;
 		}
-		
-		/*.plane:hover {
-					background-color:green;
-				}*/
+		.anim {
+			-webkit-transition-property: left top;
+			-webkit-transition-duration: 0.3s;
+		}
 	
 	  </style>
 		
@@ -57,7 +57,9 @@
 	</script>
 	<script>
 	 window.Util = (function() {
+		
 		return {
+			
 			createPlane : function( size, parent) {
 				if(typeof parent === 'string') {
 					parent = document.getElementById(parent);	
@@ -85,7 +87,7 @@
 						//div.draggable = true;
 						//div.onDragStart = true;
 						//div.webkit
-						div.textContent = '' + (i*numX + j);
+						//div.textContent = '' + (i*numX + j);
 						div.dataset.x = (span * j);
 						div.dataset.y = (span * i);
 						div.dataset.index = i;
@@ -98,12 +100,44 @@
 						
 					}
 				}
+			},
+				
+			hasClassName : function(inElement, inClassName) {
+		        var regExp = new RegExp('(?:^|\\s+)' + inClassName + '(?:\\s+|$)');
+		        return regExp.test(inElement.className);
+		    },
 
-					
+		    addClassName : function(inElement, inClassName) {
+		        if (!Util.hasClassName(inElement, inClassName)) {
+		            inElement.className = [inElement.className, inClassName].join(' ');
+				}
+		    },
 
-
+		    removeClassName : function(inElement, inClassName) {
+		        if (Util.hasClassName(inElement, inClassName)) {
+		            var regExp = new RegExp('(?:^|\\s+)' + inClassName + '(?:\\s+|$)', 'g');
+		            var curClasses = inElement.className;
+		            inElement.className = curClasses.replace(regExp, ' ');
+		        }
+		    },
+		
+			animTo : function(element, x, y) {
+				console.log('className : ' + element.className);
+				Util.addClassName( element, 'anim');
+				console.log('className : ' + element.className);
+				element.style.left = x;
+				element.style.top = y;
+				element.addEventListener( 
+					'webkitTransitionEnd', 
+					function endHandler( event ) {
+						element.removeEventListener('webkitTransitionEnd', endHandler, false);
+						Util.removeClassName( element, 'anim');
+						console.log('className : ' + element.className);
+					}, 
+					false
+				);
 			}
-		}
+		};
 	})();
 	</script>
 	
@@ -158,7 +192,7 @@
 	
 	window.onmousedown = function(e) {
 		var element = e.target;
-		if(element.className == 'plane') {
+		if(Util.hasClassName(element, 'plane')) {
 			isMouseDown = true;			
 			window.onmousemove = moveHandler;
 			offsetX = parseInt(element.style.left) - e.clientX;
@@ -168,17 +202,33 @@
 			//element.addEventListener('mousemove', moveHandler, false);
 
 			return false;
+		}else {
+			console.log('not plane : ' + element.className);
 		}
 	};
-	
+
 	window.onmouseup = function(e) {
 		console.log('onmouseup!!!');
 		isMouseDown = false;
-		if(draggingElement) {
-			draggingElement.style.left = draggingElement.dataset.x;
-			draggingElement.style.top = draggingElement.dataset.y;
-		}
 		window.onmousemove = undefined;
+		if(!draggingElement) {
+			return;
+		}
+		
+		var destX = parseInt(draggingElement.dataset.x);
+		var destY = parseInt(draggingElement.dataset.y);
+		
+		Util.animTo(draggingElement, destX, destY);
+		draggingElement = undefined;
+		
+		
+			
+
+		// if(draggingElement) {
+		// 		 			draggingElement.style.left = draggingElement.dataset.x;
+		// 		 			draggingElement.style.top = draggingElement.dataset.y;
+		// 				}
+		
 	};
 	
 	window.updateLayout = function(x,y) {
