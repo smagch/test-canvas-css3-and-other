@@ -36,6 +36,10 @@
 		.anim {
 			-webkit-transition-property: left top;
 			-webkit-transition-duration: 0.3s;
+			-moz-transition-property: left top;
+			-moz-transition-duration: 0.3s;
+			-o-transition-property: left top;
+			-o-transition-duration: 0.3s;
 		}
 	
 	  </style>
@@ -54,9 +58,19 @@
 		            };
 		})();
 		
+		
+		
+		
 	</script>
 	<script>
 	 window.Util = (function() {
+		var TRANSITION_EVENT_TYPE = (function() {
+		 	return 	window.WebKitTransitionEvent ? 'webkitTransitionEnd' : 
+					window.TransitionEvent ? 'transitionend' : 
+					window.opera ? 'oTransitionEnd' :
+					undefined;
+		})();
+		console.log('TRANSITION_EVENT_TYPE : ' + TRANSITION_EVENT_TYPE);
 		
 		return {
 			
@@ -128,10 +142,11 @@
 				element.style.left = x;
 				element.style.top = y;
 				element.addEventListener( 
-					'webkitTransitionEnd', 
+					TRANSITION_EVENT_TYPE, 
 					function endHandler( event ) {
-						element.removeEventListener('webkitTransitionEnd', endHandler, false);
+						element.removeEventListener(TRANSITION_EVENT_TYPE, endHandler, false);
 						Util.removeClassName( element, 'anim');
+						console.log('==========animetion end!!!!!!=========');
 						console.log('className : ' + element.className);
 					}, 
 					false
@@ -180,10 +195,10 @@
 			draggingElement.style.left = x;
 			draggingElement.style.top = y;
 
-			if( Math.abs(dx) > SPAN/2 || Math.abs(dy) > SPAN/2) {
-				console.log('out');
-				updateLayout(x,y);
-			}
+			// if( Math.abs(dx) > SPAN/2 || Math.abs(dy) > SPAN/2) {
+			// 				console.log('out');
+			// 				updateLayout(x,y);
+			// 			}
 			isDirty = false;
 		});
 	
@@ -220,22 +235,13 @@
 		
 		Util.animTo(draggingElement, destX, destY);
 		draggingElement = undefined;
-		
-		
-			
-
-		// if(draggingElement) {
-		// 		 			draggingElement.style.left = draggingElement.dataset.x;
-		// 		 			draggingElement.style.top = draggingElement.dataset.y;
-		// 				}
-		
 	};
 	
-	window.updateLayout = function(x,y) {
-		var closestIndex = Math.floor(x / SPAN);
-	}
+	// window.updateLayout = function(x,y) {
+	// 	var closestIndex = Math.floor(x / SPAN);
+	// }
 	
-	SPAN = 50 + 10;
+	//SPAN = 50 + 10;
 	function init () {
 		//createTile : function( numX, numY, tileSize, space, parent) {
 		Util.createTile(1,10,50,10,'stage');
