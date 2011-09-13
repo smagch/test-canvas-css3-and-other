@@ -1,0 +1,308 @@
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>testDrag</title>
+	<style>
+		body {
+	      	background-color: black;
+		    color: white;
+		    font-family: 'Lucida Grande', Verdana, Arial;
+		    font-size: 12px;
+			position: absolute;
+	    }
+		#stage {
+	        margin: 0 auto;
+			position: absolute;
+	    
+	    }
+		.box {
+			background-color:#e0f0e0;
+			position: absolute;
+			color: blue;
+			width:200px;
+			height:200px;
+		}
+		.plane {
+            background-color:#e0f0e0;
+			position: absolute;
+			color: blue;
+		}
+		.anim {
+			-webkit-transition-property: left top;
+			-webkit-transition-duration: 0.3s;
+			-moz-transition-property: left top;
+			-moz-transition-duration: 0.3s;
+			-o-transition-property: left top;
+			-o-transition-duration: 0.3s;
+		}
+	
+	  </style>
+		
+	
+	<script type="text/javascript" charset="utf-8">
+		// requestAnim shim layer by Paul Irish
+		window.requestAnimFrame = (function(){
+			return  window.requestAnimationFrame       || 
+		            window.webkitRequestAnimationFrame || 
+		            window.mozRequestAnimationFrame    || 
+		            window.oRequestAnimationFrame      || 
+		            window.msRequestAnimationFrame     || 
+		            function(/* function */ callback, /* DOMElement */ element){
+		            	window.setTimeout(callback, 1000 / 60);
+		            };
+		})();
+		
+		
+		
+		
+	</script>
+	<script>
+	 window.Util = (function() {
+		var TRANSITION_EVENT_TYPE = (function() {
+		 	return 	window.WebKitTransitionEvent ? 'webkitTransitionEnd' : 
+					window.TransitionEvent ? 'transitionend' : 
+					window.opera ? 'oTransitionEnd' :
+					undefined;
+		})();
+		console.log('TRANSITION_EVENT_TYPE : ' + TRANSITION_EVENT_TYPE);
+		
+		var divs = [ ];
+		return {
+			
+			createPlane : function( size, parent) {
+				if(typeof parent === 'string') {
+					parent = document.getElementById(parent);	
+				}
+
+				var div = document.createElement('div');
+				div.className = 'plane';
+				div.style.width = size;
+				div.style.height = size;
+				
+				parent.appendChild(div);
+				return div;
+			},
+			
+			createTile : function( numX, numY, tileSize, space, parent) {
+				if(typeof parent === 'string') {
+					parent = document.getElementById(parent);
+				}
+				var span = tileSize + space,
+					offsetX = 0;//(span * numX - space) * -0.5,
+					offsetY = 0;//(span * numY - space) * -0.5;
+				var counter = 0;
+				for(var i = 0; i < numX ; i++) {
+					for(var j = 0; j < numY ; j++) {
+						var div = Util.createPlane(tileSize, parent);
+						//div.draggable = true;
+						//div.onDragStart = true;
+						//div.webkit
+						//div.textContent = '' + (i*numX + j);
+						div.dataset.x = (span * j);
+						div.dataset.y = (span * i);
+						divs[counter] = div;
+						div.dataset.index = counter++;
+						
+						div.dataset.span = span;
+						div.style.backgroundColor = '#'+(Math.random()*0xFFFFFF>>0).toString(16);
+						div.style.left = (span * j) + 'px';
+						div.style.top =  (span * i ) + 'px';
+						// div.style.webkitTransform = 'translateX(' + ( offsetX + span * i ) + 'px) ' + 
+						// 													'translateY(' + ( offsetY + span * j ) + 'px)';
+						
+					}
+				}
+			},
+			
+			shiftElements: function(oldIndex, destIndex){
+				var min, max, sign;
+				if(oldIndex < destIndex) {
+					min = oldIndex + 1;
+					max = destIndex;
+					sign = -1;
+				} else {
+					min = destIndex;
+					max = oldIndex - 1;
+					sign = 1;
+				}
+				
+				var targets = divs.filter(function(el){
+					var index = parseInt(el.dataset.index);
+					return !(index < min || index > max);
+				});
+				
+				targets.map(function(el){
+					var index = parseInt(el.dataset.index);
+					var dest = index + sign;
+					Util.changeIndex(el, dest);
+				});
+			},
+			
+				
+			hasClassName : function(inElement, inClassName) {
+		        var regExp = new RegExp('(?:^|\\s+)' + inClassName + '(?:\\s+|$)');
+		        return regExp.test(inElement.className);
+		    },
+
+		    addClassName : function(inElement, inClassName) {
+		        if (!Util.hasClassName(inElement, inClassName)) {
+		            inElement.className = [inElement.className, inClassName].join(' ');
+				}
+		    },
+
+		    removeClassName : function(inElement, inClassName) {
+		        if (Util.hasClassName(inElement, inClassName)) {
+		            var regExp = new RegExp('(?:^|\\s+)' + inClassName + '(?:\\s+|$)', 'g');
+		            var curClasses = inElement.className;
+		            inElement.className = curClasses.replace(regExp, ' ');
+		        }
+		    },
+		
+			animTo : function(element, x, y) {
+				//console.log('className : ' + element.className);
+				Util.addClassName( element, 'anim');
+				//console.log('className : ' + element.className);
+				element.style.left = x;
+				
+				if(y != undefined) {
+					element.style.top = y;
+				}
+				
+				element.addEventListener( 
+					TRANSITION_EVENT_TYPE, 
+					function endHandler( event ) {
+						element.removeEventListener(TRANSITION_EVENT_TYPE, endHandler, false);
+						Util.removeClassName( element, 'anim');
+						console.log('==========animetion end!!!!!!=========');
+						console.log('className : ' + element.className);
+					}, 
+					false
+				);
+			},
+			
+			changeIndex : function(element, index ) {
+				var span = parseInt(element.dataset.span);
+				var destX = span * index;
+				element.dataset.index = index;
+				Util.animTo(element, destX);
+			}
+		};
+	})();
+	</script>
+	
+	<script>
+		window.Handler = (function() {
+			
+			function handler() {
+				
+			};
+			
+			handler.prototype.update = function() {
+				// body...
+			};
+			
+			return handler;
+		})();
+		
+	</script>
+	
+	<script>
+	var isMouseDown = false,
+		draggingElement,
+		offsetX = 0,
+		offsetY = 0,
+		isDirty = false;
+	
+	var moveHandler = function (e) {
+		console.log('dragging!!!');
+		
+		if(isDirty) {
+			return;
+		}
+		isDirty = true;
+		var x = offsetX + e.clientX,
+			y = offsetY + e.clientY;
+		
+		requestAnimFrame(function(){
+			draggingElement.style.left = x;
+			draggingElement.style.top = y;
+			// if( Math.abs(dx) > SPAN/2 || Math.abs(dy) > SPAN/2) {
+			// 				console.log('out');
+			// 				updateLayout(x,y);
+			// 			}
+			isDirty = false;
+		});
+		
+		var destIndex = Math.round(x / parseInt(draggingElement.dataset.span));
+		
+		if(	!(destIndex < 0  || destIndex >= TOTAL ) &&
+			draggingElement.dataset.index != destIndex) {
+			
+			var oldIndex = parseInt(draggingElement.dataset.index);
+			Util.shiftElements(oldIndex, destIndex);
+			
+			draggingElement.dataset.index = destIndex;
+		}
+		return false;
+	}
+	
+	window.onmousedown = function(e) {
+		var element = e.target;
+		if(Util.hasClassName(element, 'plane')) {
+			isMouseDown = true;			
+			window.onmousemove = moveHandler;
+			offsetX = parseInt(element.style.left) - e.clientX;
+			offsetY = parseInt(element.style.top) - e.clientY;
+			console.log('down client: ' + offsetX + ', ' + offsetY);
+			draggingElement = element;
+			//element.addEventListener('mousemove', moveHandler, false);
+
+			return false;
+		}else {
+			console.log('not plane : ' + element.className);
+		}
+	};
+
+	window.onmouseup = function(e) {
+		console.log('onmouseup!!!');
+		isMouseDown = false;
+		window.onmousemove = undefined;
+		if(!draggingElement) {
+			return;
+		}
+		var index = parseInt(draggingElement.dataset.index);
+		var span = parseInt(draggingElement.dataset.span);
+		var destX = span * index;
+		var destY = 0;
+		
+		Util.animTo(draggingElement, destX, destY);
+		draggingElement = undefined;
+	};
+	
+	// window.updateLayout = function(x,y) {
+	// 	var closestIndex = Math.floor(x / SPAN);
+	// }
+	
+	//SPAN = 50 + 10;
+	var TOTAL = 10;
+	function init () {
+		//createTile : function( numX, numY, tileSize, space, parent) {
+		Util.createTile(1,10,50,10,'stage');
+		
+		
+		//var handler = new Handler();
+		
+		// (function animloop(){
+		// 			handler.update();
+		// 			requestAnimFrame(animloop);
+		// 		})();
+	}
+	</script>
+	
+</head>
+<body onload='init()'>
+	<div id='stage'>
+	</div>
+	
+</body>
+</html>
