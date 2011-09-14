@@ -2,9 +2,10 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="user-scalable=no, width=device-width"/>
-  <title>Webkit CSS3 Test</title>
+  <title>Webkit CSS3 Centering Demo</title>
   <style>
     body {
+		
       	background-color: black;
 	    color: white;
 	    font-family: 'Lucida Grande', Verdana, Arial;
@@ -16,6 +17,9 @@
 	                            to(rgba(255, 255, 255, 0)));
 	    background-repeat: no-repeat;
     }
+	#discription {
+		position: absolute;
+	}
 	#stage {
         margin: 0 auto;
         width: 0;
@@ -107,29 +111,25 @@
 		};
 	})();
 	
-	window.Render = (function() {
+	window.Handler = (function() {
 		
-		var render = function(worldId) { 
+		function handler(worldId) { 
+			var self = this;
 			this.resize();
-			world = document.getElementById(worldId || 'world');
+			world = document.getElementById(worldId);
 		}
 		
 		var mouseX = 0, 
 			mouseY = 0,
 			mouseXBuffer = 0,
 			mouseYBuffer = 0,
+			halfW = 0,
+			halfH = 0,
 			world,
 			worldView = new WebKitCSSMatrix();
 			
 		
-		
-		//var flag = true;// to set frameRate 30
-		render.prototype.update = function() {
-			// flag = !flag;
-			// 			if(flag) {
-			// 				return;
-			// 			}
-			
+		handler.prototype.update = function() {
 			mouseXBuffer += ( mouseX - mouseXBuffer ) * 0.1;
 			mouseYBuffer += ( mouseY - mouseYBuffer ) * 0.1;
 			
@@ -140,16 +140,15 @@
 				.rotateAxisAngle(0,1,0, rotateY).rotateAxisAngle(1,0,0, rotateX);
 		}
 		
-		render.prototype.resize = function() {
+		handler.prototype.resize = function() {
 			halfW = window.innerWidth / 2;
 			halfH = window.innerHeight / 2;
 			var stage = document.getElementById('stage');
 			stage.style.webkitPerspectiveOrigin = '50% ' + halfH + 'px';
 		}
 		
-		
 		window.onresize = function(event) {
-			render.prototype.resize();
+			handler.prototype.resize();
 		}
 		
 		window.onmousemove = function (event) {
@@ -157,7 +156,7 @@
 			mouseY = event.clientY;
 		}
 		
-		return render;
+		return handler;
 	})();
 	
 	
@@ -165,25 +164,28 @@
 	function init() {
 		
 		Util.createBigBox(3, 'world', 40, 30);
-		var world = document.getElementById('world');
-		var render = new Render('world');
+		var handler = new Handler('world');
 		
 		(function animloop() {
-		      render.update();
+		      handler.update();
 		      requestAnimFrame(animloop);
 		})();
 	};
 	
-	
-	
-		
   </script>
 </head>
 <body onload='init()' >
+	<div id='discription'>
+		<h1>CSS3</h1>
+		<p>This CSS3 3D Transforms Demo only support webkit browser, safari and chrome</p>
+		
+	</div>
+	
+	
+	
 	<div id='stage'>
 		<div id='world'>
 		</div>
 	</div>
-  
 </body>
 </html>
