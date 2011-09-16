@@ -15,17 +15,14 @@
 			position: absolute;
 	    
 	    }
-		.box {
-			background-color:#e0f0e0;
-			position: absolute;
-			color: blue;
-			width:200px;
-			height:200px;
-		}
 		.plane {
             background-color:#e0f0e0;
 			position: absolute;
 			color: blue;
+		}
+		.plane:hover {
+			opacity: 0.8;
+			cursor: move;
 		}
 		.anim {
 			-webkit-transition-property: left top;
@@ -38,26 +35,22 @@
 	
 	  </style>
 		
+		
 	
-	<script type="text/javascript" charset="utf-8">
 		
-		window.requestAnimationFrame = (function(){
-			return  window.requestAnimationFrame       || 
-		            window.webkitRequestAnimationFrame || 
-		            window.mozRequestAnimationFrame    || 
-		            window.oRequestAnimationFrame      || 
-		            window.msRequestAnimationFrame     || 
-		            function(/* function */ callback, /* DOMElement */ element){
-		            	window.setTimeout(callback, 1000 / 60);
-		            };
-		})();
-		
-		
-		
-		
-	</script>
 	<script>
-	 window.Util = (function() {
+	window.requestAnimationFrame = (function(){
+		return  window.requestAnimationFrame       || 
+	            window.webkitRequestAnimationFrame || 
+	            window.mozRequestAnimationFrame    || 
+	            window.oRequestAnimationFrame      || 
+	            window.msRequestAnimationFrame     || 
+	            function(/* function */ callback, /* DOMElement */ element){
+	            	window.setTimeout(callback, 1000 / 60);
+	            };
+	})();
+	
+	window.Util = (function() {
 		
 		const TRANSITION_EVENT_TYPE = (function() {
 		 	return 	window.WebKitTransitionEvent ? 'webkitTransitionEnd' : 
@@ -267,16 +260,16 @@
 	
 	
 	
-	function init () {
+	window.onload = function () {
 		//createTile : function( numX, numY, tileSize, space, parent) {
-		Util.createTile(10,4,50,10,'stage');
+		Util.createTile(10,10,50,10,'stage');
 		
 		
 	}
 	</script>
 	
 </head>
-<body onload='init()'>
+<body>
 	<div id='stage'>
 	</div>
 	
