@@ -2,242 +2,228 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="user-scalable=no, width=device-width"/>
-  <script src="glMatrix-0.9.5.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="gl-matrix-min.js" type="text/javascript" charset="utf-8"></script>
   <title>Webkit CSS3 Test</title>
-  <style>
-    body {
-      	background-color: black;
-	    color: white;
-	    font-family: 'Lucida Grande', Verdana, Arial;
-	    font-size: 12px;
-	    background-image: -webkit-gradient(radial,
-	                            50% 500, 1,
-	                            50% 500, 400,
-	                            from(rgba(255, 255, 255, 0.3)),
-	                            to(rgba(255, 255, 255, 0)));
-	    background-repeat: no-repeat;
-		overflow: hidden;
-    }
-	#stage {
-        margin: 0 auto;
-		position: relative;
-     /*   width: 0;
-             height: 0;*/
-        -webkit-perspective: 800px;
-		-webkit-transform-style: preserve-3d;
-    }
-	#world {
-		margin: 0 auto;
-		position: absolute;
-		-webkit-transform-style: preserve-3d;
-	}
-	.box {
-		margin: 0 auto;
-		position: absolute;
-		-webkit-transform-style: preserve-3d;
-		
-	}
-	.plane {
-		margin: 0 auto;
-		position: absolute;
-		background-color:blue;
-		opacity: 0.6;
-		border: thin solid red;
-        -webkit-transform-style: flat;
-		-webkit-backface-visibility: hidden;
-	}
-	.plane:hover {
-		background-color:green;
-	}
-	@-webkit-keyframes y-spin {
-        0%    { -webkit-transform: rotateY(0deg); }
-        50%   { -webkit-transform: rotateY(180deg); }
-        100%  { -webkit-transform: rotateY(360deg); }
-    }
-  </style>
+<style>
+body {
+  background-color: black;
+  color: white;
+  font-family: 'Lucida Grande', Verdana, Arial;
+  font-size: 12px;
+  background-image: -webkit-gradient(radial,
+          50% 500, 1,
+          50% 500, 400,
+          from(rgba(255, 255, 255, 0.3)),
+          to(rgba(255, 255, 255, 0)));
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+#stage {
+  margin: 0 auto;
+  position: relative;
+  -webkit-perspective: 800px;
+  -webkit-transform-style: preserve-3d;
+}
+
+#world {
+  margin: 0 auto;
+  position: absolute;
+  -webkit-transform-style: preserve-3d;
+}
+
+.box {
+  margin: 0 auto;
+  position: absolute;
+  -webkit-transform-style: preserve-3d;
+}
+
+.plane {
+  margin: 0 auto;
+  position: absolute;
+  background-color:blue;
+  opacity: 0.6;
+  border: thin solid red;
+      -webkit-transform-style: flat;
+  -webkit-backface-visibility: hidden;
+}
+
+.plane:hover {
+  background-color:green;
+}
+
+@-webkit-keyframes y-spin {
+  0%    { -webkit-transform: rotateY(0deg); }
+  50%   { -webkit-transform: rotateY(180deg); }
+  100%  { -webkit-transform: rotateY(360deg); }
+}
+
+</style>
 
 
-  <script>
-
-	// requestAnim shim layer by Paul Irish
-	window.requestAnimFrame = (function(){
-		return  window.requestAnimationFrame       || 
-	            window.webkitRequestAnimationFrame || 
-	            window.mozRequestAnimationFrame    || 
-	            window.oRequestAnimationFrame      || 
-	            window.msRequestAnimationFrame     || 
-	            function(/* function */ callback, /* DOMElement */ element){
-	            	window.setTimeout(callback, 1000 / 60);
-	            };
-	})();
-	
-	window.Util = (function(){
-		
-		var	mat = new WebKitCSSMatrix();
-			mats = [	mat,
-					mat.rotateAxisAngle(0,1,0,90),
-					mat.rotateAxisAngle(0,1,0,180),
-					mat.rotateAxisAngle(0,1,0,-90),
-					mat.rotateAxisAngle(1,0,0,90),
-					mat.rotateAxisAngle(1,0,0,-90) ];
-			
-					
-		return {
-			
-			createPlane : function( size, parent) {
-				if(typeof parent === 'string') {
-					parent = document.getElementById(parent);	
-				}
-				
-				var div = document.createElement(div);
-				div.className = 'plane';
-				div.style.width = size;
-				div.style.height = size;
-				parent.appendChild(div);
-				return div;
-			},
-			
-			createBox : function(size, parent) { // width = height = size;
-				if( typeof parent === 'string') {
-					parent = document.getElementById(parent);
-				}
-				var box = document.createElement('div');
-				box.className = 'box';
-				
-				for(var i = 0; i < 6 ; ++i) {
-					var div = Util.createPlane(size, box);
-					var m = mats[i];
-					div.style.webkitTransform = m.translate(0,0,size/2);
-				}
-				
-				parent.appendChild(box);
-				return box;
-			},
-			
-			createBigBox : function( cubeNum, parent, cubeSize, span ) {
-				if(typeof parent === 'string') {
-					parent = document.getElementById(parent);
-				}
-				
-				var size = cubeSize + span;
-				var offset = (size * cubeNum - span) * -0.5;
-				var offsetZ = -size * (cubeNum - 1) * 0.5;
-				for(var i = 0; i < cubeNum; i++ ) {
-					for(var j = 0; j < cubeNum; j++) {
-						for(var k = 0; k < cubeNum; k++) {
-							var box = Util.createBox(cubeSize, parent );
-							box.style.webkitTransform = 'translateX(' + ( offset + size * i ) + 'px) ' + 
-														'translateY(' + ( offset + size * j ) + 'px) ' + 
-														'translateZ(' + ( offsetZ + size * k ) + 'px)';
-						}
-					}
-				}
-			}
-			
-			
-		};
-	})();
-	
-	window.Handler = (function() {
-		
-		var handler = function(worldId) { 
-			this.resize();
-			world = document.getElementById(worldId);
-			worldView = new WebKitCSSMatrix();
-		}
-		
-		var mouseX = 0, 
-			mouseY = 0,
-			mouseXBuffer = 0,
-			mouseYBuffer = 0,
-			world,
-			worldView,
-			pos=[0,0,-800],
-			TO_RADIAN = Math.PI / 180,
-			modelView = mat4.create();
-	
-
-	
-		handler.prototype.update = function() {
-			
-			mouseXBuffer += ( mouseX - mouseXBuffer ) * 0.1;
-			mouseYBuffer += ( mouseY - mouseYBuffer ) * 0.1;
-			
-			// var	rotateY = ( mouseXBuffer - halfW ) / halfW * 180,
-			// 				rotateX = ( mouseYBuffer - halfH ) / halfH * 180;
-			var	rotateY = -( mouseXBuffer - halfW ) / halfW * 30,
-				rotateX = ( mouseYBuffer - halfH ) / halfH * 30;
-			
-			
-			
-		
-			mat4.identity(modelView);
-			mat4.rotate(modelView, TO_RADIAN * rotateY, [0,1,0]);
-			mat4.rotate(modelView, TO_RADIAN * rotateX, [1,0,0]);
-			mat4.translate(modelView, [0,0,-800]);//stage's -webkit-perspective: 800px;
-			var newPos = [0,0,0];
-			mat4.multiplyVec3(modelView, [0,0,0], newPos); 
-			
-			world.style.webkitTransform = worldView
-											.translate(halfW,halfH,0)
-											.rotateAxisAngle(1,0,0, -rotateX)
-											.rotateAxisAngle(0,1,0, -rotateY)
-											.translate(-newPos[0],-newPos[1],-newPos[2])
-											.translate(pos[0],pos[1],pos[2])
-											;
-				
-		}
-		
-		handler.prototype.resize = function() {
-			halfW = window.innerWidth / 2;
-			halfH = window.innerHeight / 2;
-			var stage = document.getElementById('stage');
-			stage.style.webkitPerspectiveOrigin = '' + halfW + 'px ' + halfH + 'px';
-		}
-		
-		
-		window.onresize = function(event) {
-			handler.prototype.resize();
-		}
-		
-		window.onmousemove = function (event) {
-			mouseX = event.clientX;
-			mouseY = event.clientY;
-		}
-		
-		window.onmousedown = function(event) {
-			pos[2] -= 100;
-		}
-		
-		
-		return handler;
-	})();
-	
-	
-	
-	function init() {
-		
-		Util.createBigBox(3, 'world', 140, 10);
-		var world = document.getElementById('world');
-		
-		var handler = new Handler('world');
-		
-		(function animloop() {
-		      handler.update();
-		      requestAnimFrame(animloop);
-		})();
-	};
-	
-	
-	
-		
-  </script>
-</head>
-<body onload='init()' >
-	<div id='stage'>
-		<div id='world'>
-		</div>
-	</div>
+<script>
+  // requestAnim shim layer by Paul Irish
+var requestAnimFrame = (function(){
+  return  window.requestAnimationFrame       ||
+          window.webkitRequestAnimationFrame ||
+          window.mozRequestAnimationFrame    ||
+          window.oRequestAnimationFrame      ||
+          window.msRequestAnimationFrame     ||
+          function(/* function */ callback, /* DOMElement */ element){
+            window.setTimeout(callback, 1000 / 60);
+          };
+})();
   
+var Util = (function(){
+
+  var mat = new WebKitCSSMatrix();
+    mats = [mat,
+        mat.rotateAxisAngle(0,1,0,90),
+        mat.rotateAxisAngle(0,1,0,180),
+        mat.rotateAxisAngle(0,1,0,-90),
+        mat.rotateAxisAngle(1,0,0,90),
+        mat.rotateAxisAngle(1,0,0,-90) ];
+
+  var exports = {};
+
+  var createPlane = exports.createPlane = function( size, parent) {
+    if(typeof parent === 'string') {
+      parent = document.getElementById(parent);
+    }
+
+    var div = document.createElement(div);
+    div.className = 'plane';
+    div.style.height = div.style.width = size + 'px';
+    parent.appendChild(div);
+    return div;
+  };
+
+  var createBox = exports.createBox = function(size, parent) { // width = height = size;
+    if( typeof parent === 'string') {
+      parent = document.getElementById(parent);
+    }
+    var box = document.createElement('div');
+    box.className = 'box';
+    
+    for(var i = 0; i < 6 ; ++i) {
+      var div = createPlane(size, box);
+      var m = mats[i];
+      div.style.webkitTransform = m.translate(0,0,size/2);
+    }
+    
+    parent.appendChild(box);
+    return box;
+  };
+
+  exports.createBigBox = function( cubeNum, parent, cubeSize, span ) {
+    if(typeof parent === 'string') {
+      parent = document.getElementById(parent);
+    }
+
+    var size = cubeSize + span;
+    var offset = (size * cubeNum - span) * -0.5;
+    var offsetZ = -size * (cubeNum - 1) * 0.5;
+    for(var i = 0; i < cubeNum; i++ ) {
+      for(var j = 0; j < cubeNum; j++) {
+        for(var k = 0; k < cubeNum; k++) {
+          var box = createBox(cubeSize, parent );
+          box.style.webkitTransform = 'translateX(' + ( offset + size * i ) + 'px) ' + 
+                        'translateY(' + ( offset + size * j ) + 'px) ' + 
+                        'translateZ(' + ( offsetZ + size * k ) + 'px)';
+        }
+      }
+    }
+  };
+
+  return exports;
+})();
+  
+var Handler = (function() {
+
+  var handler = function(worldId) { 
+    this.resize();
+    world = document.getElementById(worldId);
+    worldView = new WebKitCSSMatrix();
+  }
+
+  var mouseX = 0,
+    mouseY = 0,
+    mouseXBuffer = 0,
+    mouseYBuffer = 0,
+    world,
+    worldView,
+    pos=[0,0,-800],
+    TO_RADIAN = Math.PI / 180,
+    modelView = mat4.create();
+
+  handler.prototype.update = function() {
+    
+    mouseXBuffer += ( mouseX - mouseXBuffer ) * 0.1;
+    mouseYBuffer += ( mouseY - mouseYBuffer ) * 0.1;
+    
+    // var  rotateY = ( mouseXBuffer - halfW ) / halfW * 180,
+    //        rotateX = ( mouseYBuffer - halfH ) / halfH * 180;
+    var rotateY = -( mouseXBuffer - halfW ) / halfW * 30,
+      rotateX = ( mouseYBuffer - halfH ) / halfH * 30;
+
+    mat4.identity(modelView);
+    mat4.rotate(modelView, TO_RADIAN * rotateY, [0,1,0]);
+    mat4.rotate(modelView, TO_RADIAN * rotateX, [1,0,0]);
+    mat4.translate(modelView, [0,0,-800]);//stage's -webkit-perspective: 800px;
+    var newPos = [0,0,0];
+    mat4.multiplyVec3(modelView, [0,0,0], newPos); 
+
+    world.style.webkitTransform = worldView
+                    .translate(halfW,halfH,0)
+                    .rotateAxisAngle(1,0,0, -rotateX)
+                    .rotateAxisAngle(0,1,0, -rotateY)
+                    .translate(-newPos[0],-newPos[1],-newPos[2])
+                    .translate(pos[0],pos[1],pos[2])
+                    ;
+
+  }
+
+  handler.prototype.resize = function() {
+    halfW = window.innerWidth / 2;
+    halfH = window.innerHeight / 2;
+    var stage = document.getElementById('stage');
+    stage.style.webkitPerspectiveOrigin = '' + halfW + 'px ' + halfH + 'px';
+  };
+
+  window.onresize = function(event) {
+    handler.prototype.resize();
+  };
+
+  window.onmousemove = function (event) {
+    mouseX = event.clientX;
+    mouseY = event.clientY;
+  };
+
+  window.onmousedown = function(event) {
+    pos[2] -= 100;
+  };
+
+  return handler;
+})();
+
+
+
+window.onload = function () {
+  Util.createBigBox(3, 'world', 140, 10);
+  var world = document.getElementById('world');
+  var handler = new Handler('world');
+  (function animloop() {
+    handler.update();
+    requestAnimFrame(animloop);
+  })();
+};
+
+</script>
+</head>
+<body>
+  <div id='stage'>
+    <div id='world'>
+    </div>
+  </div>
 </body>
 </html>
